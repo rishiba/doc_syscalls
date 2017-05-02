@@ -1,0 +1,334 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Calling System Calls &#8212; System Calls 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Return Values" href="08_return_values.html" />
+    <link rel="prev" title="System Call Implementation In the User Space" href="06_system_call_implementation.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="calling-system-calls">
+<h1>Calling System Calls<a class="headerlink" href="#calling-system-calls" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="glibc-syscall-interface">
+<h2>Glibc <code class="docutils literal"><span class="pre">syscall()</span></code> interface<a class="headerlink" href="#glibc-syscall-interface" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>There is a library function in <code class="docutils literal"><span class="pre">glibc</span></code> named as <code class="docutils literal"><span class="pre">syscall</span></code>, you can read
+about it in the man pages by the command <code class="docutils literal"><span class="pre">man</span> <span class="pre">2</span> <span class="pre">syscall</span></code>.</li>
+<li>We already have the code of <code class="docutils literal"><span class="pre">glibc</span></code> with us.</li>
+<li>See the function in the file
+<code class="docutils literal"><span class="pre">glibc-2.23/sysdeps/unix/sysv/linux/x86_64/syscall.S</span></code></li>
+<li>On reading the code you will see that the function is moving the arguement
+values to the registers and then calling the assembly instruction <code class="docutils literal"><span class="pre">syscall</span></code>.</li>
+<li>As <code class="docutils literal"><span class="pre">syscall</span></code> here is a user space <code class="docutils literal"><span class="pre">glibc</span></code> library function, first the
+arguements will be in the registers used for calling user space functions. Once
+this is done, as the system call is being called, the arguements will be used
+into the registers where the kernel wishes to find the arguments.</li>
+<li>Code for <code class="docutils literal"><span class="pre">syscall(2)</span></code> library function.</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Remember the note above. As <code class="docutils literal"><span class="pre">syscall</span></code> is a function which we called
+in user space, the registers are different. We now need to pick and place
+the registers in a way that the system call understands it. THis is shown in
+the code below.</p>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span>.text
+
+    ENTRY (syscall)
+        movq %rdi, %rax             /* Syscall number -&gt; rax.  */
+        movq %rsi, %rdi             /* Shift the arg2 to arg1 for syscalls */
+        movq %rdx, %rsi             /* Shift the arg3 to arg2 for syscalls */
+        movq %rcx, %rdx             /* Shift the arg4 to arg3 for syscalls */
+        movq %r8, %r10              /* Shift the arg5 to arg4 for syscalls */
+        movq %r9, %r8               /* Shift the arg6 ro arg5 for syscalls */
+        movq 8(%rsp),%r9            /* Shift the arg7 from the stack to arg6 for syscalls */
+        syscall                     /* Do the system call.  */
+        cmpq $-4095, %rax           /* Check %rax for error. %rax has the return value  */
+        jae SYSCALL_ERROR_LABEL     /* Jump to error handler if error.  */
+        ret                         /* Return to caller.  */
+    PSEUDO_END (syscall)
+</pre></div>
+</div>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">The above code is not getting highlighted, maybe due to the use of
+incorrect lexer. See this page <a class="reference external" href="http://pygments.org/docs/lexers/">http://pygments.org/docs/lexers/</a> and
+hightlight the above code. use code block for this.</p>
+</div>
+</div>
+<div class="section" id="assembly-instruction-for-calling-system-call">
+<h2>Assembly Instruction for calling system call.<a class="headerlink" href="#assembly-instruction-for-calling-system-call" title="Permalink to this headline">¶</a></h2>
+<p>We know now that for calling a system call we just need to set the right
+arguements in the register and then call the <code class="docutils literal"><span class="pre">syscall</span></code> instruction.</p>
+<p>Register <code class="docutils literal"><span class="pre">%rax</span></code> needs the <code class="docutils literal"><span class="pre">system</span> <span class="pre">call</span> <span class="pre">number</span></code>. So where are the <code class="docutils literal"><span class="pre">system</span>
+<span class="pre">call</span> <span class="pre">numbers</span></code> defined. Here we can see the <code class="docutils literal"><span class="pre">glibc</span></code> code to see the mapping
+of the number and the system call. Or you can see this in a header file in the
+system&#8217;s include directory.</p>
+<p>System call numbers will never change, if they do there will be a lot of
+porting efforts which will need to be done else a lot of applications will
+break.</p>
+<p>Let us see a excerpt from the file <code class="docutils literal"><span class="pre">/usr/include/x86_64-linux-gnu/asm/unistd_64.h</span></code></p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#define __NR_read 0</span>
+<span class="c1">#define __NR_write 1</span>
+<span class="c1">#define __NR_open 2</span>
+<span class="c1">#define __NR_close 3</span>
+<span class="c1">#define __NR_stat 4</span>
+</pre></div>
+</div>
+<p>Here you can see that the system calls have numbers associated with them.</p>
+<p>Now armed with the knowledge of how to call system calls let us write some
+assembly code where we call a system call.</p>
+<p>Before doing this excercise let us see the <code class="docutils literal"><span class="pre">write</span></code> system call a bit. In the
+follwing code we will write <code class="docutils literal"><span class="pre">hello</span> <span class="pre">world</span></code> on the screen. We will not use
+<code class="docutils literal"><span class="pre">printf</span></code> for this, rather we will use <code class="docutils literal"><span class="pre">2</span></code> (the standard descriptor for
+writing to the terminal) and <code class="docutils literal"><span class="pre">write</span></code> system call for it.</p>
+<p>We need to do this so that we understand our assembly level program a bit better.</p>
+<div class="highlight-c"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">write</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&quot;Hello World&quot;</span><span class="p">,</span> <span class="mi">11</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<p>You should go through the assembly code of the C file. Use command <code class="docutils literal"><span class="pre">gcc</span> <span class="pre">-S</span>
+<span class="pre">filename.c</span></code> This will generate the assembly file with <code class="docutils literal"><span class="pre">.s</span></code> extension. If you
+go through the assembly code you will see a call to <code class="docutils literal"><span class="pre">write</span></code> function. This
+function is defined in the <code class="docutils literal"><span class="pre">glibc</span></code>. We will see the source of <code class="docutils literal"><span class="pre">write</span></code>
+system call in sometime. At that time you can refer this and understand it
+better.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When I am compiling the code I can see the assembly code only using the eax register and not rax, why?</p>
+</div>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">We should explain the assembly code generated above.</p>
+</div>
+<p>Now we will do the same using the <code class="docutils literal"><span class="pre">syscall</span></code> intergface which the <code class="docutils literal"><span class="pre">glibc</span></code> provides.</p>
+<div class="highlight-c"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;sys/syscall.h&gt;</span><span class="cp"></span>
+
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span>
+<span class="p">{</span>
+    <span class="n">syscall</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;Hello World&quot;</span><span class="p">,</span> <span class="mi">11</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<p>You should go through the assembly code of the C file. Use command <code class="docutils literal"><span class="pre">gcc</span> <span class="pre">-S</span>
+<span class="pre">filename.c</span></code> This will generate the assembly file with <code class="docutils literal"><span class="pre">.s</span></code> extension. If you
+go through the assembly code you will see a call to <code class="docutils literal"><span class="pre">syscall</span></code> function. This
+function is defined in the <code class="docutils literal"><span class="pre">glibc</span></code>. We will see the source of <code class="docutils literal"><span class="pre">syscall</span></code>
+system call in sometime. At that time you can refer this and understand it
+better.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">When I am compiling the code I can see the assembly code only using the eax register and not rax, why?</p>
+</div>
+<div class="admonition-todo admonition" id="index-2">
+<p class="first admonition-title">Todo</p>
+<p class="last">We should explain the assembly code generated above.</p>
+</div>
+<p>Now we will do the same in our assembly code.</p>
+<div class="highlight-nasm"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="k">section</span> <span class="nv">.text</span>
+	<span class="k">global</span> <span class="nv">_start</span>
+	<span class="nl">_start:</span>                 <span class="c1">; ELF entry point</span>
+	 <span class="c1">; 1 is the number for syscall write ().</span>
+
+    <span class="nf">mov</span> <span class="nb">rax</span><span class="p">,</span> <span class="mi">1</span>             	
+    <span class="c1">; 1 is the STDOUT file descriptor.</span>
+
+    <span class="nf">mov</span> <span class="nb">rdi</span><span class="p">,</span> <span class="mi">1</span>             	
+    
+     <span class="c1">; buffer to be printed.</span>
+
+    <span class="nf">mov</span> <span class="nb">rsi</span><span class="p">,</span> <span class="nv">message</span>       	
+    
+    <span class="c1">; length of buffer</span>
+
+    <span class="nf">mov</span> <span class="nb">rdx</span><span class="p">,</span> <span class="p">[</span><span class="nv">messageLen</span><span class="p">]</span>   	
+
+    <span class="c1">; call the syscall instruction</span>
+    <span class="nf">syscall</span>
+	
+    <span class="c1">; sys_exit</span>
+	<span class="nf">mov</span> <span class="nb">rax</span><span class="p">,</span> <span class="mi">60</span>             
+
+    <span class="c1">; return value is 0</span>
+	<span class="nf">mov</span> <span class="nb">rdi</span><span class="p">,</span> <span class="mi">0</span>              
+
+    <span class="c1">; call the assembly instruction</span>
+	<span class="nf">syscall</span>                  
+	
+<span class="k">section</span> <span class="nv">.data</span>
+	<span class="nl">messageLen:</span> <span class="kd">dq</span> <span class="nv">message.end</span><span class="o">-</span><span class="nv">message</span>
+	<span class="nl">message:</span> <span class="kd">db</span> <span class="s">&#39;Hello World&#39;</span><span class="p">,</span> <span class="mi">10</span>
+<span class="nl">.end:</span>
+</pre></div>
+</td></tr></table></div>
+<p>Makefile for assembling the code.</p>
+<div class="highlight-make"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nf">all</span><span class="o">:</span>
+	nasm -felf64 hello.asm
+	ld hello.o
+
+<span class="nf">clean</span><span class="o">:</span>
+	rm -rf *.o
+	
+</pre></div>
+</td></tr></table></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Calling System Calls</a><ul>
+<li><a class="reference internal" href="#glibc-syscall-interface">Glibc <code class="docutils literal"><span class="pre">syscall()</span></code> interface</a></li>
+<li><a class="reference internal" href="#assembly-instruction-for-calling-system-call">Assembly Instruction for calling system call.</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="06_system_call_implementation.html" title="previous chapter">System Call Implementation In the User Space</a></li>
+      <li>Next: <a href="08_return_values.html" title="next chapter">Return Values</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/07_calling_system_calls.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Rishi Agrawal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/07_calling_system_calls.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

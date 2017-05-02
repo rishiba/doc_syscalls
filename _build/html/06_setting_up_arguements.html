@@ -1,0 +1,339 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Setting Up Arguments &#8212; System Calls 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="System Call Implementation In the User Space" href="06_system_call_implementation.html" />
+    <link rel="prev" title="How Is a System Call Called On x86_64 architecture from User Space" href="05_calling_system_calls.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="setting-up-arguments">
+<h1>Setting Up Arguments<a class="headerlink" href="#setting-up-arguments" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>In the above section we have see the theory part related to passing arguements
+to the system call interface of the kernel.  Now we will see some assignements
+related to it.</p>
+<p>We will see if how the above concepts being implemented in actual code. By this
+time we know that the we need to link the code to the <code class="docutils literal"><span class="pre">glibc</span></code> in order to use
+the system calls. In the following sections we will see this</p>
+<p>We will do it in three different ways.</p>
+<ol class="arabic simple">
+<li>Walk through <code class="docutils literal"><span class="pre">open</span></code> system call in <code class="docutils literal"><span class="pre">glibc</span></code> library.</li>
+<li>See it using debugger.</li>
+<li>Use <code class="docutils literal"><span class="pre">ptrace</span></code> system call and see the state of the registers. Code related to this can be found in the appendix.</li>
+</ol>
+</div>
+<div class="section" id="walk-through-open-system-call-in-glibc">
+<h2>Walk through <code class="docutils literal"><span class="pre">open</span></code> system call in <code class="docutils literal"><span class="pre">glibc</span></code><a class="headerlink" href="#walk-through-open-system-call-in-glibc" title="Permalink to this headline">¶</a></h2>
+<p>In this assignment we will download the source code of <code class="docutils literal"><span class="pre">glibc</span></code> and then walk through the code
+to find out where exactly the code is calling the <code class="docutils literal"><span class="pre">syscall</span></code> assembly instruction and where is
+it moving the arguements to the registers.</p>
+<p>We will do this with <code class="docutils literal"><span class="pre">open</span></code> system call and <code class="docutils literal"><span class="pre">write</span></code> system calls.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you have not understood above concepts. Do not worry, keep reading
+on and then re-read the whole thing once more.</p>
+</div>
+<div class="section" id="how-open-system-call-is-called-using-glibc">
+<h3>How <code class="docutils literal"><span class="pre">open()</span></code> system call is called using <code class="docutils literal"><span class="pre">glibc</span></code><a class="headerlink" href="#how-open-system-call-is-called-using-glibc" title="Permalink to this headline">¶</a></h3>
+<ol class="arabic simple">
+<li>All the above theory should match with the code which is written in <code class="docutils literal"><span class="pre">glibc</span></code>.</li>
+<li>We will now read the code in the <code class="docutils literal"><span class="pre">glibc</span></code> to find out if the theory matches
+what is written in the code.</li>
+<li>We will also do some assignments to get a better understanding of the above theory.</li>
+<li>Now the question is <code class="docutils literal"><span class="pre">open</span></code> system call - how will it turn to a <code class="docutils literal"><span class="pre">syscall</span></code>
+instruction.</li>
+<li>Now we need to find out what happens to the <code class="docutils literal"><span class="pre">open</span></code> system call when compiled.</li>
+<li>File where sys call numbers are mentioned
+<code class="docutils literal"><span class="pre">/usr/include/x86_64-linux-gnu/asm/unistd_64.h</span></code></li>
+<li>File where <code class="docutils literal"><span class="pre">SYS_write</span></code> maps to <code class="docutils literal"><span class="pre">NR_Write</span></code>
+<code class="docutils literal"><span class="pre">/usr/include/x86_64-linux-gnu/bits/syscall.h</span></code></li>
+<li>From the objdump we saw that <code class="docutils literal"><span class="pre">__libc_open</span></code> was called. This called
+<code class="docutils literal"><span class="pre">__open_nocancel</span></code> and it had a <code class="docutils literal"><span class="pre">syscall</span></code> instruction. It means that the
+path to the kernel is in this function.</li>
+<li>See the <code class="docutils literal"><span class="pre">object</span> <span class="pre">dump</span></code>, offset <code class="docutils literal"><span class="pre">433e0e</span></code>. This dump is taken from a code where we had a
+<code class="docutils literal"><span class="pre">open</span></code> system call and was compiled.</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span>0000000000433e09 &lt;_open_nocancel&gt;:
+433e09:   b8 02 00 00 00          mov    $0x2,%eax
+
+433e0e:   0f 05                   syscall        &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+
+433e10:   48 3d 01 f0 ff ff       cmp    $0xfffffffffffff001,%rax
+433e16:   0f 83 f4 46 00 00       jae    438510 &lt;__syscall_error&gt;
+433e1c:   c3                      retq
+433e1d:   48 83 ec 08             sub    $0x8,%rsp
+433e21:   e8 ca 2f 00 00          callq  436df0 &lt;__libc_enable_asynccancel&gt;
+433e26:   48 89 04 24             mov    %rax,(%rsp)
+433e2a:   b8 02 00 00 00          mov    $0x2,%eax
+433e2f:   0f 05                   syscall
+433e31:   48 8b 3c 24             mov    (%rsp),%rdi
+433e35:   48 89 c2                mov    %rax,%rdx
+433e38:   e8 13 30 00 00          callq  436e50 &lt;__libc_disable_asynccancel&gt;
+433e3d:   48 89 d0                mov    %rdx,%rax
+433e40:   48 83 c4 08             add    $0x8,%rsp
+433e44:   48 3d 01 f0 ff ff       cmp    $0xfffffffffffff001,%rax
+433e4a:   0f 83 c0 46 00 00       jae    438510 &lt;__syscall_error&gt;
+433e50:   c3                      retq
+433e51:   66 2e 0f 1f 84 00 00    nopw   %cs:0x0(%rax,%rax,1)
+433e58:   00 00 00
+433e5b:   0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li>Now, when in glibc-2.3 dir I started finding the code for the function
+<code class="docutils literal"><span class="pre">__open_nocancel</span></code> I found this</li>
+<li>File is <code class="docutils literal"><span class="pre">sysdeps/unix/sysv/linux/generic/open.c</span></code></li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="nb">int</span> <span class="n">__open_nocancel</span> <span class="p">(</span><span class="n">const</span> <span class="n">char</span> <span class="o">*</span><span class="n">file</span><span class="p">,</span> <span class="nb">int</span> <span class="n">oflag</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="nb">int</span> <span class="n">mode</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">__OPEN_NEEDS_MODE</span> <span class="p">(</span><span class="n">oflag</span><span class="p">))</span>
+    <span class="p">{</span>
+        <span class="n">va_list</span> <span class="n">arg</span><span class="p">;</span>
+        <span class="n">va_start</span> <span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">oflag</span><span class="p">);</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="n">va_arg</span> <span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">int</span><span class="p">);</span>
+        <span class="n">va_end</span> <span class="p">(</span><span class="n">arg</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">INLINE_SYSCALL</span> <span class="p">(</span><span class="n">openat</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">AT_FDCWD</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">oflag</span><span class="p">,</span> <span class="n">mode</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li>So INLINE_SYSCALL is being called by this function. This is defined in the
+file <code class="docutils literal"><span class="pre">glibc-2.3/sysdeps/unix/sysv/linux/x86_64/sysdep.h</span></code></li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># define INLINE_SYSCALL(name, nr, args...) \</span>
+    <span class="p">({</span>                                          \
+     <span class="n">unsigned</span> <span class="n">long</span> <span class="nb">int</span> <span class="n">resultvar</span> <span class="o">=</span> <span class="n">INTERNAL_SYSCALL</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="p">,</span> <span class="n">nr</span><span class="p">,</span> <span class="n">args</span><span class="p">);</span>        \
+     <span class="k">if</span> <span class="p">(</span><span class="n">__glibc_unlikely</span> <span class="p">(</span><span class="n">INTERNAL_SYSCALL_ERROR_P</span> <span class="p">(</span><span class="n">resultvar</span><span class="p">,</span> <span class="p">)))</span>        \
+     <span class="p">{</span>                                       \
+     <span class="n">__set_errno</span> <span class="p">(</span><span class="n">INTERNAL_SYSCALL_ERRNO</span> <span class="p">(</span><span class="n">resultvar</span><span class="p">,</span> <span class="p">));</span>           \
+     <span class="n">resultvar</span> <span class="o">=</span> <span class="p">(</span><span class="n">unsigned</span> <span class="n">long</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>                   \
+     <span class="p">}</span>                                       \
+     <span class="p">(</span><span class="n">long</span> <span class="nb">int</span><span class="p">)</span> <span class="n">resultvar</span><span class="p">;</span> <span class="p">})</span>
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li>Thus it calls <code class="docutils literal"><span class="pre">INTERNAL_SYSCALL</span></code> which is defined as</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># define INTERNAL_SYSCALL(name, err, nr, args...) \</span>
+  <span class="n">INTERNAL_SYSCALL_NCS</span> <span class="p">(</span><span class="n">__NR_</span><span class="c1">##name, err, nr, ##args)</span>
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li>Now let us see the <code class="docutils literal"><span class="pre">INTERNAL_SYSCALL_NCS</span></code> in the file
+<code class="docutils literal"><span class="pre">./sysdeps/unix/sysv/linux/x86_64/sysdep.h</span></code> here see the macro
+<code class="docutils literal"><span class="pre">INTERNAL_SYSCALL_NCS</span></code>. This is the exact macro which is calling the
+<code class="docutils literal"><span class="pre">syscall</span></code> assembly instruction. You can see the <code class="docutils literal"><span class="pre">asm</span></code> instructions in the code.</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># define INTERNAL_SYSCALL_NCS(name, err, nr, args...) \</span>
+    <span class="p">({</span>                                          \
+     <span class="n">unsigned</span> <span class="n">long</span> <span class="nb">int</span> <span class="n">resultvar</span><span class="p">;</span>                          \
+     <span class="n">LOAD_ARGS_</span><span class="c1">##nr (args)                             \</span>
+     <span class="n">LOAD_REGS_</span><span class="c1">##nr                                \</span>
+     <span class="n">asm</span> <span class="n">volatile</span> <span class="p">(</span>                                \
+         <span class="s2">&quot;syscall</span><span class="se">\n\t</span><span class="s2">&quot;</span>                                 \
+         <span class="p">:</span> <span class="s2">&quot;=a&quot;</span> <span class="p">(</span><span class="n">resultvar</span><span class="p">)</span>                                \
+         <span class="p">:</span> <span class="s2">&quot;0&quot;</span> <span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="n">ASM_ARGS_</span><span class="c1">##nr : &quot;memory&quot;, REGISTERS_CLOBBERED_BY_SYSCALL);   \</span>
+     <span class="p">(</span><span class="n">long</span> <span class="nb">int</span><span class="p">)</span> <span class="n">resultvar</span><span class="p">;</span> <span class="p">})</span>
+</pre></div>
+</div>
+<ol class="arabic simple">
+<li>Thus here we enter the kernel using the <code class="docutils literal"><span class="pre">syscall</span></code> assembly instruction.</li>
+<li>Also, we need to figure out how - <code class="docutils literal"><span class="pre">open()</span></code> call went to be called as <code class="docutils literal"><span class="pre">__open_nocancel</span></code></li>
+</ol>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last"><code class="docutils literal"><span class="pre">open</span></code> call called <code class="docutils literal"><span class="pre">__open_nocancel</span></code>, How.</p>
+</div>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">The above section is not very well written, do it.</p>
+</div>
+<p>#.  We have redone the whole thing with the <code class="docutils literal"><span class="pre">write</span></code> system call in the
+appendix. You can see that as well to get more clarity.</p>
+</div>
+<div class="section" id="how-is-write-system-call-implemented-in-glibc">
+<h3>How is <code class="docutils literal"><span class="pre">write</span></code> system call implemented in <code class="docutils literal"><span class="pre">glibc</span></code><a class="headerlink" href="#how-is-write-system-call-implemented-in-glibc" title="Permalink to this headline">¶</a></h3>
+<div class="admonition-todo admonition" id="index-2">
+<p class="first admonition-title">Todo</p>
+<p class="last">Write this part - do it in the appendix. This will make the paper better organized.</p>
+</div>
+</div>
+</div>
+<div class="section" id="check-arguements-using-a-debugger">
+<h2>Check Arguements Using A Debugger<a class="headerlink" href="#check-arguements-using-a-debugger" title="Permalink to this headline">¶</a></h2>
+<p>In the above example we saw how the code calls the <code class="docutils literal"><span class="pre">syscall</span></code> instruction to
+enter the kernel and call the required functionality.  Write the following code
+and compile it with <code class="docutils literal"><span class="pre">gcc</span> <span class="pre">-g</span> <span class="pre">filename.c</span></code></p>
+<p><code class="docutils literal"><span class="pre">-g</span></code> flag adds the debugging information to the execuatable.</p>
+<div class="highlight-c"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;string.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">char</span> <span class="n">filename</span><span class="p">[]</span> <span class="o">=</span> <span class="s">&quot;non_existent_file&quot;</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">fd</span><span class="p">;</span>
+    <span class="n">fd</span> <span class="o">=</span> <span class="n">open</span> <span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">O_CREAT</span><span class="o">|</span><span class="n">O_WRONLY</span><span class="p">);</span>
+
+    <span class="n">fd</span> <span class="o">=</span> <span class="n">write</span> <span class="p">(</span><span class="n">fd</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="n">filename</span><span class="p">));</span>
+    <span class="n">close</span> <span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+    <span class="n">unlink</span> <span class="p">(</span><span class="n">filename</span><span class="p">);</span>
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<ul class="simple">
+<li>Once done, run the code in the debugger <code class="docutils literal"><span class="pre">gdb</span> <span class="pre">./a.out</span></code></li>
+<li>Set the breakpoint in the call on write <code class="docutils literal"><span class="pre">break</span> <span class="pre">write</span></code></li>
+<li>According to the calling conventions the register <code class="docutils literal"><span class="pre">$rdi</span></code> should have the
+file descriptor. <code class="docutils literal"><span class="pre">$rdi</span></code> should have the string&#8217;s address and the <code class="docutils literal"><span class="pre">$rdx</span></code>
+should have the length of the string.</li>
+<li>Using <code class="docutils literal"><span class="pre">print</span></code> command will confirm these values.</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span>(gdb) b write
+Breakpoint 1 at 0x400560
+(gdb) r
+Starting program: /home/rishi/mydev/books/crash_book/code_system_calls/01/aaa/a.out
+
+Breakpoint 1, write () at ../sysdeps/unix/syscall-template.S:81
+81  ../sysdeps/unix/syscall-template.S: No such file or directory.
+(gdb) print $rdi
+$1 = 3
+(gdb) print (char *) $rsi
+$2 = 0x7fffffffdeb0 &quot;non_existent_file&quot;
+(gdb) print $rdx
+$3 = 17
+(gdb)
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-ptrace-to-see-the-variables-passed">
+<h2>Using <code class="docutils literal"><span class="pre">ptrace</span></code> to see the variables passed<a class="headerlink" href="#using-ptrace-to-see-the-variables-passed" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-todo admonition" id="index-3">
+<p class="first admonition-title">Todo</p>
+<p class="last">add code for this. Better to add it as a appendix.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Setting Up Arguments</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#walk-through-open-system-call-in-glibc">Walk through <code class="docutils literal"><span class="pre">open</span></code> system call in <code class="docutils literal"><span class="pre">glibc</span></code></a><ul>
+<li><a class="reference internal" href="#how-open-system-call-is-called-using-glibc">How <code class="docutils literal"><span class="pre">open()</span></code> system call is called using <code class="docutils literal"><span class="pre">glibc</span></code></a></li>
+<li><a class="reference internal" href="#how-is-write-system-call-implemented-in-glibc">How is <code class="docutils literal"><span class="pre">write</span></code> system call implemented in <code class="docutils literal"><span class="pre">glibc</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#check-arguements-using-a-debugger">Check Arguements Using A Debugger</a></li>
+<li><a class="reference internal" href="#using-ptrace-to-see-the-variables-passed">Using <code class="docutils literal"><span class="pre">ptrace</span></code> to see the variables passed</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="05_calling_system_calls.html" title="previous chapter">How Is a System Call Called On x86_64 architecture from User Space</a></li>
+      <li>Next: <a href="06_system_call_implementation.html" title="next chapter">System Call Implementation In the User Space</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/06_setting_up_arguements.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Rishi Agrawal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/06_setting_up_arguements.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

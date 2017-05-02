@@ -1,0 +1,435 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>System Architecture &#8212; System Calls 1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Working with glibc" href="03_glibc.html" />
+    <link rel="prev" title="Introduction" href="01_introduction.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="system-architecture">
+<h1>System Architecture<a class="headerlink" href="#system-architecture" title="Permalink to this headline">¶</a></h1>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Write about System archtecture - little bit about how a process links with the libraries etc.</p>
+</div>
+<div class="section" id="shared-library">
+<h2>Shared Library<a class="headerlink" href="#shared-library" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-todo admonition" id="index-1">
+<p class="first admonition-title">Todo</p>
+<p class="last">Write about Shared library.</p>
+</div>
+</div>
+<div class="section" id="static-library">
+<h2>Static Library<a class="headerlink" href="#static-library" title="Permalink to this headline">¶</a></h2>
+<div class="admonition-todo admonition" id="index-2">
+<p class="first admonition-title">Todo</p>
+<p class="last">Write about Static Library.</p>
+</div>
+</div>
+<div class="section" id="system-calls">
+<h2>System Calls<a class="headerlink" href="#system-calls" title="Permalink to this headline">¶</a></h2>
+<p>System calls are API&#8217;s which the Kernel Provides to the user space
+applications. The system calls pass some arguements to the kernel space and the
+kernel acts accordingly on the arguements.</p>
+<p>For example: <code class="docutils literal"><span class="pre">open()</span></code> system call - opens a file so that further read and
+write operations can be done on the file. The return value of the <code class="docutils literal"><span class="pre">open</span></code>
+system call is a <code class="docutils literal"><span class="pre">file</span> <span class="pre">descriptor</span></code> or an <code class="docutils literal"><span class="pre">error</span> <span class="pre">status</span></code>. Sucessful return value
+allows the user space applications to use the <code class="docutils literal"><span class="pre">file</span> <span class="pre">descriptor</span></code> for further reads
+and writes.</p>
+<p>System calls get executed in the kernel space. Kernel space runs in an elevated
+prviledge mode. There is a shift of the priviledge modes whenever a system call
+is called and hence its a bad idea to call system calls without considering the
+time taken to switch to the elevated priviledge mode.</p>
+<p>For example - lets say that you want to copy a file. One way of copying the file
+is to read each character of the file and for every character read you write the
+character to another file. This will call two system calls for every
+character you read and write. As this is expensive in terms of time its a bad
+design.</p>
+<p>Let us see a small demostration of this.</p>
+<div class="highlight-c"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * In this code we will open the /etc/passwd file and copy the file 1000 times</span>
+<span class="cm"> * to the output file. We will copy it 1000 times so that we have a good amount</span>
+<span class="cm"> * data to run our test on.</span>
+<span class="cm"> */</span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp"></span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">src_file</span> <span class="o">=</span> <span class="s">&quot;src_file&quot;</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">dest_file</span> <span class="o">=</span> <span class="s">&quot;copied_file.txt&quot;</span><span class="p">;</span>
+
+    <span class="kt">int</span> <span class="n">dest_fd</span><span class="p">,</span> <span class="n">src_fd</span><span class="p">,</span> <span class="n">read_byte</span><span class="p">,</span> <span class="n">write_byte</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">read_buf</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+
+    <span class="n">dest_fd</span> <span class="o">=</span> <span class="n">open</span> <span class="p">(</span><span class="n">dest_file</span><span class="p">,</span> <span class="n">O_WRONLY</span><span class="o">|</span><span class="n">O_CREAT</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">dest_fd</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">fprintf</span> <span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Error Opening the destination file.&quot;</span><span class="p">);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">fprintf</span> <span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Successfully opened the destination file..&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">src_fd</span> <span class="o">=</span> <span class="n">open</span> <span class="p">(</span><span class="n">src_file</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">src_fd</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">fprintf</span> <span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Error Opening the source file.&quot;</span><span class="p">);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">fprintf</span> <span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Successfully opened the source file.&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+
+
+    <span class="cm">/*</span>
+<span class="cm">     * We will start the copy process byte by byte</span>
+<span class="cm">     */</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">read_byte</span> <span class="o">=</span> <span class="n">read</span> <span class="p">(</span><span class="n">src_fd</span><span class="p">,</span> <span class="n">read_buf</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">read_byte</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot;Reached the EOF for src file&quot;</span><span class="p">);</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">write_byte</span> <span class="o">=</span> <span class="n">write</span> <span class="p">(</span><span class="n">dest_fd</span><span class="p">,</span> <span class="n">read_buf</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">write_byte</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">perror</span> <span class="p">(</span><span class="s">&quot;Error Writing File&quot;</span><span class="p">);</span>
+            <span class="n">exit</span> <span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">close</span><span class="p">(</span><span class="n">src_fd</span><span class="p">);</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">dest_fd</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<p>What should instead be done here is that you read a block (set of characters)
+and then write that block into another file. This will reduce the number of the
+system calls and thus increase the overall performance of the file copy
+program.</p>
+<div class="highlight-c"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * In this code we will open the /etc/passwd file and copy the file 1000 times</span>
+<span class="cm"> * to the output file. We will copy it 1000 times so that we have a good amount</span>
+<span class="cm"> * data to run our test on.</span>
+<span class="cm"> */</span>
+
+<span class="cp">#include</span> <span class="cpf">&lt;stdlib.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;fcntl.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;unistd.h&gt;</span><span class="cp"></span>
+<span class="cp">#include</span> <span class="cpf">&lt;errno.h&gt;</span><span class="cp"></span>
+
+<span class="cp">#define BLOCK_SIZE 4096</span>
+
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">()</span>
+<span class="p">{</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">src_file</span> <span class="o">=</span> <span class="s">&quot;src_file&quot;</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="o">*</span><span class="n">dest_file</span> <span class="o">=</span> <span class="s">&quot;copied_file.txt&quot;</span><span class="p">;</span>
+
+    <span class="kt">int</span> <span class="n">dest_fd</span><span class="p">,</span> <span class="n">src_fd</span><span class="p">,</span> <span class="n">read_byte</span><span class="p">,</span> <span class="n">write_byte</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">read_buf</span><span class="p">[</span><span class="n">BLOCK_SIZE</span><span class="p">];</span>
+
+    <span class="n">dest_fd</span> <span class="o">=</span> <span class="n">open</span> <span class="p">(</span><span class="n">dest_file</span><span class="p">,</span> <span class="n">O_WRONLY</span><span class="o">|</span><span class="n">O_CREAT</span><span class="p">,</span> <span class="n">S_IRWXU</span><span class="o">|</span><span class="n">S_IRWXG</span><span class="o">|</span><span class="n">S_IROTH</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">dest_fd</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">perror</span> <span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">Error opening the destination file&quot;</span><span class="p">);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">fprintf</span> <span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">Successfully opened the destination file..&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="n">src_fd</span> <span class="o">=</span> <span class="n">open</span> <span class="p">(</span><span class="n">src_file</span><span class="p">,</span> <span class="n">O_RDONLY</span><span class="p">);</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">src_fd</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">perror</span> <span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">Error opening the source file&quot;</span><span class="p">);</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">fprintf</span> <span class="p">(</span><span class="n">stderr</span><span class="p">,</span> <span class="s">&quot;Successfully opened the source file.&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+
+
+    <span class="cm">/*</span>
+<span class="cm">     * We will start the copy process byte by byte</span>
+<span class="cm">     */</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">read_byte</span> <span class="o">=</span> <span class="n">read</span> <span class="p">(</span><span class="n">src_fd</span><span class="p">,</span> <span class="n">read_buf</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">read_byte</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">fprintf</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="s">&quot;Reached the EOF for src file&quot;</span><span class="p">);</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="n">write_byte</span> <span class="o">=</span> <span class="n">write</span> <span class="p">(</span><span class="n">dest_fd</span><span class="p">,</span> <span class="n">read_buf</span><span class="p">,</span> <span class="n">BLOCK_SIZE</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">write_byte</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">perror</span> <span class="p">(</span><span class="s">&quot;Erroo writing file&quot;</span><span class="p">);</span>
+            <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">close</span><span class="p">(</span><span class="n">src_fd</span><span class="p">);</span>
+    <span class="n">close</span><span class="p">(</span><span class="n">dest_fd</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</td></tr></table></div>
+<div class="highlight-make"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="nf">all</span><span class="o">:</span>
+	gcc -o slow_write slow_write.c -Wall
+	gcc -o fast_write fast_write.c -Wall
+
+<span class="nf">run</span><span class="o">:</span>
+	<span class="nb">time</span> slow_write
+	<span class="nb">time</span> fast_write
+
+<span class="nf">clean</span><span class="o">:</span>
+	rm src_file slow_write fast_write copied_file.txt
+
+<span class="nf">setup</span><span class="o">:</span>
+	<span class="k">for</span> i in <span class="sb">`</span>seq <span class="m">1</span> 1000<span class="sb">`</span><span class="p">;</span> <span class="k">do</span> cat /etc/passwd &gt;&gt; src_file<span class="p">;</span> <span class="k">done</span> 
+</pre></div>
+</td></tr></table></div>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">System Architecture</a><ul>
+<li><a class="reference internal" href="#shared-library">Shared Library</a></li>
+<li><a class="reference internal" href="#static-library">Static Library</a></li>
+<li><a class="reference internal" href="#system-calls">System Calls</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="01_introduction.html" title="previous chapter">Introduction</a></li>
+      <li>Next: <a href="03_glibc.html" title="next chapter">Working with <code class="docutils literal"><span class="pre">glibc</span></code></a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/02_system_calls.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Rishi Agrawal.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/02_system_calls.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
