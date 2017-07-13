@@ -17,13 +17,13 @@ What is ``glibc``
 =================
 
 ``glibc`` is a library which has a lot of functions pre-written for you so that
-you do not have to write the code again and again. Also it statndardizes the
-way you should be writing your code. It warps a lot of system specific details
+you do not have to write the code again and again. Also it standardizes the
+way you should be writing your code. It wraps a lot of system specific details
 and all you need to know is to how to call the particular function, and what to
 be expected from the function and what are the return values the function will
 give you. 
 
-It is the ``GNU Version of Standard C Library``. All the functions
+``glibc`` is the ``GNU Version of Standard C Library``. All the functions
 supported in ``Standard C Library`` can be found there + some added by the
 ``GNU``
 
@@ -33,13 +33,10 @@ supported in ``Standard C Library`` can be found there + some added by the
 
 **For example:** Let us say that we have to find the length of a string. Now this
 is quite a small code to write and we can write the whole thing ourself, but it
-is a function which is used a lot of times. So the library gives you an
-implementation of this. As that function is present in the library you can
+is a function which will be used a lot of time accross a lot of products. So the library gives you an
+implementation of this. As the function is present in the library you can
 safely assume that the function will work fine because of millions of people
 have used it and tested it.
-
-You can add your own code to the library and modify the functions to suit your need. 
-
 
 For the sake of understanding it better we will now go into the code of the
 library function and see if its similar to our code.
@@ -48,10 +45,10 @@ Also we will make some changes to the code so that it stops working incorrectly
 and then use it in our programs. This exercise is just a demostration of the
 following.
 
--   We can read the code of glibc
--   We can compile the code of glibc ourselves and use the newly compiled library
--   We can change the code of glibc
--   We can use the changed code of glibc
+-   We can read the code of glibc.
+-   We can compile the code of glibc ourselves and use the newly compiled library.
+-   We can change the code of glibc.
+-   We can use the changed code of glibc.
 
 Download, Extract and walk through ``glibc``
 ============================================
@@ -89,11 +86,9 @@ Extract the code
 
 ::
 
-
     rishi@rishi-VirtualBox:~$ tar -xf glibc-2.24.tar.xz 
 
 *   This creates a directory names ``glibc-2.24`` in the folder.
-
 
 Walkthrough ``glibc``
 =====================
@@ -308,24 +303,24 @@ We will get into the glibc-2.24 source directory and run the ``configure`` scrip
       
 ::
 
-      rishi@rishi-VirtualBox:~/build_glibc$ ../glibc-2.24/configure 
-      checking build system type... x86_64-pc-linux-gnu
-      checking host system type... x86_64-pc-linux-gnu
-      checking for gcc... gcc
-      checking for suffix of object files... o
-      checking whether we are using the GNU C compiler... yes
+    rishi@rishi-VirtualBox:~/build_glibc$ ../glibc-2.24/configure 
+    checking build system type... x86_64-pc-linux-gnu
+    checking host system type... x86_64-pc-linux-gnu
+    checking for gcc... gcc
+    checking for suffix of object files... o
+    checking whether we are using the GNU C compiler... yes
 
-      >>>>>>>>>>SNIP<<<<<<<<<<<<<<<<<<<<<<
-      
-      running configure fragment for sysdeps/unix/sysv/linux/x86_64
-      running configure fragment for sysdeps/unix/sysv/linux
-      checking installed Linux kernel header files... 3.2.0 or later
-      checking for kernel header at least 2.6.32... ok
-      *** On GNU/Linux systems the GNU C Library should not be installed into
-      *** /usr/local since this might make your system totally unusable.
-      *** We strongly advise to use a different prefix.  For details read the FAQ.
-      *** If you really mean to do this, run configure again using the extra
-      *** parameter `--disable-sanity-checks`.
+    >>>>>>>>>>SNIP<<<<<<<<<<<<<<<<<<<<<<
+    
+    running configure fragment for sysdeps/unix/sysv/linux/x86_64
+    running configure fragment for sysdeps/unix/sysv/linux
+    checking installed Linux kernel header files... 3.2.0 or later
+    checking for kernel header at least 2.6.32... ok
+    *** On GNU/Linux systems the GNU C Library should not be installed into
+    *** /usr/local since this might make your system totally unusable.
+    *** We strongly advise to use a different prefix.  For details read the FAQ.
+    *** If you really mean to do this, run configure again using the extra
+    *** parameter `--disable-sanity-checks`.
 
 
 *   Configure does not want to overwrite the default library and hence we need to give another directory to install the library.
@@ -335,29 +330,28 @@ We will get into the glibc-2.24 source directory and run the ``configure`` scrip
 
 ::
 
-      rishi@rishi-VirtualBox:~/build_glibc$ mkdir ../install_glibc
-      rishi@rishi-VirtualBox:~/build_glibc$ ../glibc-2.24/configure --prefix=/home/rishi/install_glibc/
-      checking build system type... x86_64-pc-linux-gnu
-      checking host system type... x86_64-pc-linux-gnu
-      checking for gcc... gcc
-      checking for suffix of object files... o
-      configure: creating ./config.status
+    rishi@rishi-VirtualBox:~/build_glibc$ mkdir ../install_glibc
+    rishi@rishi-VirtualBox:~/build_glibc$ ../glibc-2.24/configure --prefix=/home/rishi/install_glibc/
+    checking build system type... x86_64-pc-linux-gnu
+    checking host system type... x86_64-pc-linux-gnu
+    checking for gcc... gcc
+    checking for suffix of object files... o
+    configure: creating ./config.status
 
-      >>>>>>>SNIP<<<<<<<<<<<<
+    >>>>>>>SNIP<<<<<<<<<<<<
 
-      config.status: creating config.make
-      config.status: creating Makefile
-      config.status: creating config.h
-      config.status: executing default commands
+    config.status: creating config.make
+    config.status: creating Makefile
+    config.status: creating config.h
+    config.status: executing default commands
 
 
 *   Configure completed
 
 ::
 
-      rishi@rishi-VirtualBox:~/build_glibc$ ls
-      bits  config.h  config.log  config.make  config.status  Makefile
-    
+    rishi@rishi-VirtualBox:~/build_glibc$ ls
+    bits  config.h  config.log  config.make  config.status  Makefile
 
 Compliing
 ---------
@@ -367,30 +361,30 @@ Compliing
 
 ::
 
-      rishi@rishi-VirtualBox:~/build_glibc$ make -j 16 
-      make -r PARALLELMFLAGS="" -C ../glibc-2.24 objdir=`pwd` all
-      make[1]: Entering directory '/home/rishi/glibc-2.24'
-      LC_ALL=C gawk -f scripts/sysd-rules.awk > /home/rishi/build_glibc/sysd-rulesT \
+    rishi@rishi-VirtualBox:~/build_glibc$ make -j 16 
+    make -r PARALLELMFLAGS="" -C ../glibc-2.24 objdir=`pwd` all
+    make[1]: Entering directory '/home/rishi/glibc-2.24'
+    LC_ALL=C gawk -f scripts/sysd-rules.awk > /home/rishi/build_glibc/sysd-rulesT \
 
 
 
-      rishi@rishi-VirtualBox:~/build_glibc$ ls
-      bits  config.h  config.log  config.make  config.status  Makefile
-      rishi@rishi-VirtualBox:~/build_glibc$ 
-      rishi@rishi-VirtualBox:~/build_glibc$ 
-      rishi@rishi-VirtualBox:~/build_glibc$ 
+    rishi@rishi-VirtualBox:~/build_glibc$ ls
+    bits  config.h  config.log  config.make  config.status  Makefile
+    rishi@rishi-VirtualBox:~/build_glibc$ 
+    rishi@rishi-VirtualBox:~/build_glibc$ 
+    rishi@rishi-VirtualBox:~/build_glibc$ 
 
 
 
-      rishi@rishi-VirtualBox:~/build_glibc$ make -j 16 
-      make -r PARALLELMFLAGS="" -C ../glibc-2.24 objdir=`pwd` all
-      make[1]: Entering directory '/home/rishi/glibc-2.24'
-      LC_ALL=C gawk -f scripts/sysd-rules.awk > /home/rishi/build_glibc/sysd-rulesT \
+    rishi@rishi-VirtualBox:~/build_glibc$ make -j 16 
+    make -r PARALLELMFLAGS="" -C ../glibc-2.24 objdir=`pwd` all
+    make[1]: Entering directory '/home/rishi/glibc-2.24'
+    LC_ALL=C gawk -f scripts/sysd-rules.awk > /home/rishi/build_glibc/sysd-rulesT \
 
-            >>>>>>>>>>>>>>>>>>>>>SNIP<<<<<<<<<<<<<<<<<<<
-      gcc -nostdlib -nostartfiles -o /home/rishi/build_glibc/elf/pldd    -Wl,-z,combreloc -Wl,-z,relro -Wl,--hash-style=both /home/rishi/build_glibc/csu/crt1.o /home/rishi/build_glibc/csu/crti.o `gcc  --print-file-name=crtbegin.o` /home/rishi/build_glibc/elf/pldd.o /home/rishi/build_glibc/elf/xmalloc.o  -Wl,-dynamic-linker=/home/rishi/install_glibc/lib/ld-linux-x86-64.so.2 -Wl,-rpath-link=/home/rishi/build_glibc:/home/rishi/build_glibc/math:/home/rishi/build_glibc/elf:/home/rishi/build_glibc/dlfcn:/home/rishi/build_glibc/nss:/home/rishi/build_glibc/nis:/home/rishi/build_glibc/rt:/home/rishi/build_glibc/resolv:/home/rishi/build_glibc/crypt:/home/rishi/build_glibc/mathvec:/home/rishi/build_glibc/nptl /home/rishi/build_glibc/libc.so.6 /home/rishi/build_glibc/libc_nonshared.a -Wl,--as-needed /home/rishi/build_glibc/elf/ld.so -Wl,--no-as-needed -lgcc  `gcc  --print-file-name=crtend.o` /home/rishi/build_glibc/csu/crtn.o
-      make[2]: Leaving directory '/home/rishi/glibc-2.24/elf'
-      make[1]: Leaving directory '/home/rishi/glibc-2.24'
+        >>>>>>>>>>>>>>>>>>>>>SNIP<<<<<<<<<<<<<<<<<<<
+    gcc -nostdlib -nostartfiles -o /home/rishi/build_glibc/elf/pldd    -Wl,-z,combreloc -Wl,-z,relro -Wl,--hash-style=both /home/rishi/build_glibc/csu/crt1.o /home/rishi/build_glibc/csu/crti.o `gcc  --print-file-name=crtbegin.o` /home/rishi/build_glibc/elf/pldd.o /home/rishi/build_glibc/elf/xmalloc.o  -Wl,-dynamic-linker=/home/rishi/install_glibc/lib/ld-linux-x86-64.so.2 -Wl,-rpath-link=/home/rishi/build_glibc:/home/rishi/build_glibc/math:/home/rishi/build_glibc/elf:/home/rishi/build_glibc/dlfcn:/home/rishi/build_glibc/nss:/home/rishi/build_glibc/nis:/home/rishi/build_glibc/rt:/home/rishi/build_glibc/resolv:/home/rishi/build_glibc/crypt:/home/rishi/build_glibc/mathvec:/home/rishi/build_glibc/nptl /home/rishi/build_glibc/libc.so.6 /home/rishi/build_glibc/libc_nonshared.a -Wl,--as-needed /home/rishi/build_glibc/elf/ld.so -Wl,--no-as-needed -lgcc  `gcc  --print-file-name=crtend.o` /home/rishi/build_glibc/csu/crtn.o
+    make[2]: Leaving directory '/home/rishi/glibc-2.24/elf'
+    make[1]: Leaving directory '/home/rishi/glibc-2.24'
 
 *   Make runs successfully.
 
@@ -400,9 +394,7 @@ Compliing
 
     $ ls ../install_glibc/
 
-
 *   Let us run the ``make install`` command.
-
 
 ::
 
@@ -416,12 +408,12 @@ Compliing
     
     >>>>>>>>>>>SNIP<<<<<<<<<<<<<<<
     
-     -f /home/rishi/build_glibc/elf/symlink.list
-     test ! -x /home/rishi/build_glibc/elf/ldconfig || LC_ALL=C \
-       /home/rishi/build_glibc/elf/ldconfig  \
-                /home/rishi/install_glibc/lib /home/rishi/install_glibc/lib
-                /home/rishi/build_glibc/elf/ldconfig: Warning: ignoring configuration file that cannot be opened: /home/rishi/install_glibc/etc/ld.so.conf: No such file or directory
-                make[1]: Leaving directory '/home/rishi/glibc-2.24'
+    -f /home/rishi/build_glibc/elf/symlink.list
+    test ! -x /home/rishi/build_glibc/elf/ldconfig || LC_ALL=C \
+    /home/rishi/build_glibc/elf/ldconfig  \
+    /home/rishi/install_glibc/lib /home/rishi/install_glibc/lib
+    /home/rishi/build_glibc/elf/ldconfig: Warning: ignoring configuration file that cannot be opened: /home/rishi/install_glibc/etc/ld.so.conf: No such file or directory
+    make[1]: Leaving directory '/home/rishi/glibc-2.24'
     
     
 
@@ -434,7 +426,6 @@ Install
 
     rishi@rishi-VirtualBox:~/build_glibc$ ls ../install_glibc/
     bin  etc  include  lib  libexec  sbin  
-    
 
 
 Using the new library
@@ -451,7 +442,6 @@ Here is the code for adding some changes to the glibc code. See the file
 ``glibc-2.24/stdlib/div.c`` and ``glibc-2.24/include/stdlib.h``.
 
 Here is the diff 
-
 
 ``glibc-2.24/stdlib/div.c``
 ---------------------------
@@ -571,6 +561,9 @@ Here is the diff
 Conclusion
 ==========
 
-In this chapter we have see pretty important things with respect to using glibc. We have see where to find glibc, how to dwnload, extract, make changes and compile the glibc library in your system.
+In this chapter we have see pretty important things with respect to using
+glibc. We have see where to find glibc, how to download, extract, make changes
+and compile the glibc library in your system.
 
-Doing all the steps hands-on will enable you understand the whole workflow more clearly ann will thus improve your understanding of systems.
+Doing all the steps hands-on will enable you understand the whole workflow more
+clearly and will thus improve your understanding of systems.

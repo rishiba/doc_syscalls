@@ -13,11 +13,10 @@ We will see if how the above concepts being implemented in actual code. By this
 time we know that the we need to link the code to the ``glibc`` in order to use
 the system calls. In the following sections we will see this
 
-We will do it in three different ways. 
+We will do it in three different ways.
 
 #.  Walk through ``open`` system call in ``glibc`` library.
 #.  See it using debugger.
-#.  Use ``ptrace`` system call and see the state of the registers. Code related to this can be found in the appendix.
 
 Walk through ``open`` system call in ``glibc``
 ==============================================
@@ -28,10 +27,8 @@ it moving the arguements to the registers.
 
 We will do this with ``open`` system call and ``write`` system calls.
 
-
 .. note:: If you have not understood above concepts. Do not worry, keep reading
    on and then re-read the whole thing once more.
-
 
 How ``open()`` system call is called using ``glibc``
 ----------------------------------------------------
