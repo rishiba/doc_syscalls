@@ -5,58 +5,34 @@ Setting Up Arguments
 Introduction
 ============
 
-In the above section we have see the theory part related to passing arguements
-to the system call interface of the kernel.  Now we will see some assignements
-related to it.
+In the previous chapter :ref:`system_calls` section we have see the theory part related to passing arguements
+to the system call interface of the kernel. Now we will a ``hands-on`` exercise related to it.
 
-We will see if how the above concepts being implemented in actual code. By this
-time we know that the we need to link the code to the ``glibc`` in order to use
-the system calls. In the following sections we will see this
+We will see if how the above concepts being implemented in ``glibc`` code. We will see it in two ways
 
-We will do it in three different ways.
-
-#.  Walk through ``open`` system call in ``glibc`` library.
-#.  See it using debugger.
+#.  We will walk through ``open`` system call in ``glibc`` library. This should show us how the registers are filled with the right value and then assembly instruction ``syscall`` is been called.
+#.  We will add a breakpoint in one system call and see the state of the registers.
 
 Walk through ``open`` system call in ``glibc``
 ==============================================
 
-In this assignment we will download the source code of ``glibc`` and then walk through the code
-to find out where exactly the code is calling the ``syscall`` assembly instruction and where is 
-it moving the arguements to the registers.
-
-We will do this with ``open`` system call and ``write`` system calls.
-
-.. note:: If you have not understood above concepts. Do not worry, keep reading
-   on and then re-read the whole thing once more.
-
-How ``open()`` system call is called using ``glibc``
-----------------------------------------------------
-
-#.  All the above theory should match with the code which is written in ``glibc``.
+#.  All the above theory of passing the arguments should match with the code which is written in ``glibc``.
 
 #.  We will now read the code in the ``glibc`` to find out if the theory matches
     what is written in the code.
 
-#.  We will also do some assignments to get a better understanding of the above theory.
-
 #.  Now the question is ``open`` system call - how will it turn to a ``syscall``
-    instruction.
+    instruction with the right values in the registers.
 
-#.  Now we need to find out what happens to the ``open`` system call when compiled.
+#.  Now we need to find out what happens to the ``open`` system call when compiled. For this we will write a small code and compile it statically. Using ``objdump`` we will be able to see the actual function calls.
 
-#.  File where sys call numbers are mentioned
-    ``/usr/include/x86_64-linux-gnu/asm/unistd_64.h``
+#.  File where sys call numbers are mentioned ``/usr/include/x86_64-linux-gnu/asm/unistd_64.h``
 
-#.  File where ``SYS_write`` maps to ``NR_Write``
-    ``/usr/include/x86_64-linux-gnu/bits/syscall.h``
+#.  File where ``SYS_write`` maps to ``NR_Write`` ``/usr/include/x86_64-linux-gnu/bits/syscall.h``
 
-#.  From the objdump we saw that ``__libc_open`` was called. This called
-    ``__open_nocancel`` and it had a ``syscall`` instruction. It means that the
-    path to the kernel is in this function.
+#.  From the objdump we saw that ``__libc_open`` was called. This called ``__open_nocancel`` and it had a ``syscall`` instruction.
 
-#.  See the ``object dump``, offset ``433e0e``. This dump is taken from a code where we had a
-    ``open`` system call and was compiled.
+#.  See the ``object dump``, offset ``433e0e``. This dump is taken from a code where we had a ``open`` system call and was compiled.
 
 ::
 
@@ -64,7 +40,7 @@ How ``open()`` system call is called using ``glibc``
     433e09:   b8 02 00 00 00          mov    $0x2,%eax
 
     433e0e:   0f 05                   syscall        <<<<<<<<<<<<<<<<<<
-    
+
     433e10:   48 3d 01 f0 ff ff       cmp    $0xfffffffffffff001,%rax
     433e16:   0f 83 f4 46 00 00       jae    438510 <__syscall_error>
     433e1c:   c3                      retq
@@ -72,7 +48,7 @@ How ``open()`` system call is called using ``glibc``
     433e21:   e8 ca 2f 00 00          callq  436df0 <__libc_enable_asynccancel>
     433e26:   48 89 04 24             mov    %rax,(%rsp)
     433e2a:   b8 02 00 00 00          mov    $0x2,%eax
-    433e2f:   0f 05                   syscall 
+    433e2f:   0f 05                   syscall
     433e31:   48 8b 3c 24             mov    (%rsp),%rdi
     433e35:   48 89 c2                mov    %rax,%rdx
     433e38:   e8 13 30 00 00          callq  436e50 <__libc_disable_asynccancel>
@@ -85,9 +61,9 @@ How ``open()`` system call is called using ``glibc``
     433e58:   00 00 00
     433e5b:   0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
 
-#.  Now, when in glibc-2.3 dir I started finding the code for the function
-    ``__open_nocancel`` I found this
+#.  Now, when in glibc-2.3 dir I started finding the code for the function ``__open_nocancel`` I found this
 
+#.  There is 
 
 #.  File is ``sysdeps/unix/sysv/linux/generic/open.c``
 
@@ -96,20 +72,20 @@ How ``open()`` system call is called using ``glibc``
     int __open_nocancel (const char *file, int oflag, ...)
     {
         int mode = 0;
-    
+
         if (__OPEN_NEEDS_MODE (oflag))
-        {   
+        {
             va_list arg;
             va_start (arg, oflag);
             mode = va_arg (arg, int);
             va_end (arg);
-        }   
-    
+        }
+
         return INLINE_SYSCALL (openat, 4, AT_FDCWD, file, oflag, mode);
     }
-    
+
 #.  So INLINE_SYSCALL is being called by this function. This is defined in the
-    file ``glibc-2.3/sysdeps/unix/sysv/linux/x86_64/sysdep.h`` 
+    file ``glibc-2.3/sysdeps/unix/sysv/linux/x86_64/sysdep.h``
 
 ::
 
@@ -122,9 +98,9 @@ How ``open()`` system call is called using ``glibc``
          resultvar = (unsigned long int) -1;                   \
          }                                       \
          (long int) resultvar; })
-    
 
-#.  Thus it calls ``INTERNAL_SYSCALL`` which is defined as 
+
+#.  Thus it calls ``INTERNAL_SYSCALL`` which is defined as
 
 ::
 
@@ -133,8 +109,8 @@ How ``open()`` system call is called using ``glibc``
 
 #.  Now let us see the ``INTERNAL_SYSCALL_NCS`` in the file
     ``./sysdeps/unix/sysv/linux/x86_64/sysdep.h`` here see the macro
-    ``INTERNAL_SYSCALL_NCS``. This is the exact macro which is calling the
-    ``syscall`` assembly instruction. You can see the ``asm`` instructions in the code.
+    ``INTERNAL_SYSCALL_NCS``. **This is the exact macro which is calling the
+    ``syscall`` assembly instruction.** You can see the ``asm`` instructions in the code.
 
 ::
 
@@ -158,13 +134,7 @@ How ``open()`` system call is called using ``glibc``
 
 .. todo:: The above section is not very well written, do it.
 
-#.  We have redone the whole thing with the ``write`` system call in the
-appendix. You can see that as well to get more clarity.
-
-How is ``write`` system call implemented in ``glibc``
------------------------------------------------------
-
-.. todo:: Write this part - do it in the appendix. This will make the paper better organized. 
+#.  **We have redone the whole thing with the ``write`` system call in the appendix. You can see that as well to get more clarity.**
 
 Check Arguements Using A Debugger
 =================================
@@ -191,8 +161,8 @@ and compile it with ``gcc -g filename.c``
     (gdb) b write
     Breakpoint 1 at 0x400560
     (gdb) r
-    Starting program: /home/rishi/mydev/books/crash_book/code_system_calls/01/aaa/a.out 
-    
+    Starting program: /home/rishi/mydev/books/crash_book/code_system_calls/01/aaa/a.out
+
     Breakpoint 1, write () at ../sysdeps/unix/syscall-template.S:81
     81  ../sysdeps/unix/syscall-template.S: No such file or directory.
     (gdb) print $rdi
@@ -201,10 +171,4 @@ and compile it with ``gcc -g filename.c``
     $2 = 0x7fffffffdeb0 "non_existent_file"
     (gdb) print $rdx
     $3 = 17
-    (gdb) 
-
-Using ``ptrace`` to see the variables passed
-============================================
-
-.. todo:: add code for this. Better to add it as a appendix.
-
+    (gdb)

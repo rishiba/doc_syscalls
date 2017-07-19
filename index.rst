@@ -11,7 +11,6 @@ System Call Layer
    :maxdepth: 2
    :caption: Contents:
 
-
    01_introduction.rst
    02_system_calls.rst
    03_glibc.rst
@@ -23,12 +22,10 @@ System Call Layer
    11_appendix.rst
    12_appendix.rst
 
-
-
-
-
 Indices and tables
 ==================
+
+.. todolist::
 
 * :ref:`genindex`
 * :ref:`modindex`

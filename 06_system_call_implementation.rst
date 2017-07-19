@@ -12,7 +12,3 @@ wrapper around that instruction using a function call.
 *   ``syscall`` assembly instruction to enter the priviledged mode. This allows
     the process to move to the priviledge mode.
 
-
-
-
-

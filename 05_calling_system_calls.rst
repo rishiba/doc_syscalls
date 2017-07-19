@@ -1,23 +1,26 @@
 ==================================================================
-How Is a System Call Called On x86_64 architecture from User Space
+System Calls On x86_64 from User Space
 ==================================================================
 
-There are three parts to calling a system call.
+There are three parts to calling a system call like any function call.
 
-#.  Setting up the arguements to be passed to the kernel space.
-#.  Call the system call using the ``syscall`` assembly instruction.
-#.  Get back the return value.
+*  Setting up the arguements to be passed to the kernel space. Here we gather the right arguments to pass to the function. Based on these argument the kernel will do the required work for you.
+
+*  Call the system call using the ``syscall`` assembly instruction. This is exact place where the programs ``hand-over`` the work to the kernel. The process then waits for the system call to return. In asynchronours system calls the process will get a return value to indicate that the task has been submitted correctly and kernel is doing the job.
+
+*  Get back the return value. This is the return status of the work done by the kernel. Using this the kernel notifies the process about the task done. There is also a global error number variable which stores the error (if any) encountered by the kernel.
 
 In the sections below we will see each of them in detail.
+
+.. _system_calls: 
 
 Setting Up Arguements
 =====================
 
 .. note:: The following text is copied verbatim from the document ``System V
    Application Binary Interface AMD64 Architecture Processor 57 Supplement
-   Draft Version 0.99.6``, Section ``AMD64 Linux Kernel Conventions``
-
-.. todo:: Check if we are infringing copyright here.
+   Draft Version 0.99.6``, Section ``AMD64 Linux Kernel Conventions``. The
+   copyright belongs to the original owners of the document.
 
 ::
 
@@ -75,11 +78,9 @@ Passing arguements
 #.  Arguements are passed in the registers. The called function then uses the register to get the arguements.
 #.  The arguements are passed in the following sequence ``%rdi, %rsi, %rdx, %r10, %r8 and %r9.``
 #.  Number of arguements are limited to ``six``, no arguements will be passed on the stack.
-#.  Only values of class INTEGER or class MEMORY are passed to the kernel.
-#.  Class ``INTEGER`` This class consists of integral types that fit into one of the general
-    purpose registers.
-#.  Class ``MEMORY`` This class consists of types that will be passed and returned in mem-
-    ory via the stack. These will mostly be strings or memory buffer. For example in ``write()`` system call, the first parameter is ``fd`` which is of class ``INTEGER`` while the second argument is the ``buffer`` which has the data to be written in the file, the class will be ``MEMORY`` over here. The third parameter which is the count - again has the class as ``INTEGER``.
+#.  Only values of class ``INTEGER`` or class ``MEMORY`` are passed to the kernel.
+#.  Class ``INTEGER`` This class consists of integral types that fit into one of the general purpose registers.
+#.  Class ``MEMORY`` This class consists of types that will be passed and returned in memory via the stack. These will mostly be strings or memory buffer. For example in ``write()`` system call, the first parameter is ``fd`` which is of class ``INTEGER`` while the second argument is the ``buffer`` which has the data to be written in the file, the class will be ``MEMORY`` over here. The third parameter which is the count - again has the class as ``INTEGER``.
 
 .. note:: The above information is sourced from AMD64 Architecture Processor Supplement Draft Version 0.99.6
 
