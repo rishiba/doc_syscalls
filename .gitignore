@@ -58,3 +58,7 @@ e-*
 *__pycache__*
 /home/rishi/mydev/mywebsite/angularJs/ngMovieStub/.git
 *eclipse_workspace/.metadata
+*.e
+*.o
+*.s
+*.elf

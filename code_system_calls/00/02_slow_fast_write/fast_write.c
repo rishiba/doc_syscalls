@@ -51,7 +51,7 @@ int main ()
         }
         write_byte = write (dest_fd, read_buf, BLOCK_SIZE);
         if (write_byte < 0) {
-            perror ("Erroo writing file");
+            perror ("Error writing file");
             exit(1);
         }
     }

@@ -2,26 +2,15 @@
 Introduction
 ============
 
+In this book we will see how our code interacts with the glibc library which inturn interacts with the system calls in order to get some work done from the computer.
 
-In this white paper we will see how our code interacts with the glibc library and 
-then the system calls in order to get some work done from the computer.
+We will go deep into the glibc code and see how it is all organized. How system calls are called from the user space programs.  How arguements are passed and how are return values accessed.
 
-We will go deep into the code and see how it is all organized. How system calls
-are called from the user space programs.  How arguements are passed and how are
-return values accessed.
-
-We will see the code, we will see the same thing using debugger and then we
-will write our own small ``strace`` to see what the ``strace``  actually does when
-it lists the paramters to you.
-
+We will see the code, we will see the same thing using debugger. The same thing we will see with the strace utility as well.
 
 Acknowledgements
 ================
 
-Most of the contents in the paper is inspired from the contents in the internet
-and various blogs.
+Most of the contents in this book is inspired from the contents in the internet, various blogs and internet. This is my first attempt at writing a document which is big enough be called as a book.
 
-I wanted to understand the whole process of the glibc and system calls and
-while doing that - I just documented the whole thing.
-
-Wherever possible I have given links of the reference point.
+Your suggestions and comments are very much required. You can interact with me on rishi.b.agrawal@gmail.com. Additionaly, incase you see any issue or if you would like to contribute, you can use the github repo https://github.com/rishiba/doc_syscalls for it.
