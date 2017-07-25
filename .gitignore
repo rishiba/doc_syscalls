@@ -42,7 +42,6 @@ cscope.po.out
 cscope.in.out
 *.o.d
 *o.cmd
-mkfs-simplefs
 *map
 e-*
 *pickle
@@ -56,9 +55,10 @@ e-*
 *.d*
 *pyc*
 *__pycache__*
-/home/rishi/mydev/mywebsite/angularJs/ngMovieStub/.git
-*eclipse_workspace/.metadata
 *.e
 *.o
 *.s
 *.elf
+elf.*
+*build_glibc_2_24*
+*install_glibc_2_24*

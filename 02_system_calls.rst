@@ -65,7 +65,7 @@ Hands-On
 
 - Write the code
 
-.. literalinclude:: code_system_calls/00/hello_world.c
+.. literalinclude:: code_system_calls/00/01_hello_world/hello_world.c
     :language: c
     :linenos:
 
@@ -218,7 +218,7 @@ design.
 
 Let us see a small demonstration of this.
 
-.. literalinclude:: code_system_calls/00/slow_write.c
+.. literalinclude:: code_system_calls/00/02_slow_fast_write/slow_write.c
     :language: c
     :linenos:
 
@@ -227,11 +227,11 @@ and then write that block into another file. This will reduce the number of the
 system calls and thus increase the overall performance of the file copy
 program.
 
-.. literalinclude:: code_system_calls/00/fast_write.c
+.. literalinclude:: code_system_calls/00/02_slow_fast_write/fast_write.c
     :language: c
     :linenos:
 
-.. literalinclude:: code_system_calls/00/Makefile
+.. literalinclude:: code_system_calls/00/02_slow_fast_write/Makefile
     :language: make
     :linenos:
 
@@ -269,7 +269,7 @@ With the above context about important components of the system we can now draw 
 Conclusion
 ==========
 
-In this chapter we have seen some of the important concepts and steps required to take a program from a ``.c`` file to an executable format on a ``Linux`` machine. This chapter also introduced us to the concepts of system calls and libraries. 
+In this chapter we have seen some of the important concepts and steps required to take a program from a ``.c`` file to an executable format on a ``Linux`` machine. This chapter also introduced us to the concepts of system calls and libraries.
 
 ==========
 References

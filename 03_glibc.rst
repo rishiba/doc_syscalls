@@ -10,21 +10,21 @@ own static library, and a dynamic library.
 
 In this chapter we will see how to work with ``glibc`` library.
 
-We will Download a fresh glibc and will compile it on ou systems. We will make
+We will Download a fresh ``glibc`` and will compile it on our systems. We will make
 some changes to the code and then link our code with this library.
 
 Why this chapter
 ================
 
-This chapter will help you understand the basic concepts related to using glibc
+This chapter will help you understand the basic concepts related to using ``glibc``
 and making changes to it. Generally you will never need to modify the code to
-the glibc, but incase you need to make some modifications or if you need to
+the ``glibc``, but in-case you need to make some modifications or if you need to
 debug a function - this section will be quite useful.
 
 What is ``glibc``
 =================
 
-``glibc`` is a library which has a lot of functions pre-written for you so that
+``glibc`` is a library which has a lot of functions written for you so that
 you do not have to write the code again and again. Also it standardizes the
 way you should be writing your code. It wraps a lot of system specific details
 and all you need to know is to how to call the particular function, and what to
@@ -35,8 +35,8 @@ give you.
 supported in ``Standard C Library`` can be found in the ``glibc``.
 
 **For example:** Let us say that we have to find the length of a string. Now
-this is quite a small code to write and we can write the whole thing ourself,
-but it is a function which will be used a lot of time accross a lot of
+this is quite a small code to write and we can write the whole thing ourselves,
+but it is a function which will be used a lot of time across a lot of
 products. So the library gives you an implementation of this. As the function
 is present in the library you can safely assume that the function will work
 fine because of millions of people have used it and tested it.
@@ -45,18 +45,18 @@ For the sake of understanding it better we will now go into the code of the
 library function and see if its similar to our code.
 
 Also we will make some changes to the code so that it stops working incorrectly
-and then use it in our programs. This exercise is just a demostration of the
+and then use it in our programs. This exercise is just a demonstration of the
 following.
 
--   We can read the code of glibc.
--   We can compile the code of glibc ourselves and use the newly compiled library.
--   We can change the code of glibc.
--   We can use the changed code of glibc.
+-   We can read the code of ``glibc``.
+-   We can compile the code of ``glibc`` ourselves and use the newly compiled library.
+-   We can change the code of ``glibc``.
+-   We can use the changed code of ``glibc``.
 
 Download and extract ``glibc``
 ==============================
 
-The source code of glibc is available at ``https://ftp.gnu.org/gnu/libc/``. You
+The source code of ``glibc`` is available at ``https://ftp.gnu.org/gnu/libc/``. You
 can sort the list using ``Last Modified`` to get the latest tar package.
 
 From the page I got the link as ``https://ftp.gnu.org/gnu/libc/glibc-2.24.tar.xz``.
@@ -92,7 +92,7 @@ Walkthrough ``glibc``
 =====================
 
 *   Here is a listing of all the directories inside the extracted ``glibc``
-    directory. You can see the diectories where the code related to ``math``
+    directory. You can see the directories where the code related to ``math``
     ``strings`` ``stdlib`` are present.
 
 ::
@@ -244,7 +244,7 @@ Reading some functions of ``glibc``
 Reading ``strlen``
 ------------------
 
-*   Let us see the code of ``strcmp.c``. The file is present in the extracted glibc directory.
+*   Let us see the code of ``strcmp.c``. The file is present in the extracted ``glibc`` directory.
 
 ::
 
@@ -282,7 +282,7 @@ Reading ``strlen``
 *   The code is pretty simple to understand. It iterates through the string till
     the time it finds both the characters equal.
 
-    What I want to emphasize is that the glibc is just a collect of c functions,
+    What I want to emphasize is that the ``glibc`` is just a collect of c functions,
     written in c files, packaged and compiled, and we can also make similar
     functions and libraries and publish.
 
@@ -291,7 +291,7 @@ Walkthrough ``div``
 
 *   Let us now see the code of ``stdlib/div.c``. I have again picked a very simple
     function which will enable you to understand that the functions and
-    functionality provided by the glibc is just a simple function which we write
+    functionality provided by the ``glibc`` is just a simple function which we write
     almost daily in our code.
 
 ::
@@ -324,7 +324,7 @@ We will also go through the same steps and complete compilation and installation
 Configuring ``glibc``
 ---------------------
 
-We will get into the glibc-2.24 source directory and run the ``configure``
+We will get into the ``glibc-2.24`` source directory and run the ``configure``
 script. I have intentionally shown the mistakes which happened so that you also
 understand the small things which needs to be taken care while configuring and
 compiling.
@@ -530,13 +530,13 @@ Using new ``glibc``
 ===================
 
 Let us now use the above library to link and run our code. We will add a new
-function to the ``glibc``, change the behaviour of a function in glibc and use the
+function to the ``glibc``, change the behavior of a function in ``glibc`` and use the
 new function and call the changed function.
 
 This will give us a good understanding of how to compile and link with the new
 library.
 
-Here is the code for adding some changes to the glibc code. See the file
+Here is the code for adding some changes to the ``glibc`` code. See the file
 ``glibc-2.24/stdlib/div.c`` and ``glibc-2.24/include/stdlib.h``.
 
 Here is the diff
@@ -544,30 +544,47 @@ Here is the diff
 ``glibc-2.24/stdlib/div.c``
 ---------------------------
 
-*   Here we have added a function ``my_div`` which just returns -1 on invokation
+*   Here we have added a function ``mydiv`` which just returns -1 on invocation
     and have changed the way the function div behaves. Now when we will pass 99 and
-    99 to div it will return 100 and 100. Read the default behaviour in the man
+    99 to div it will return 100 and 100. Read the default behavior in the man
     pages.
 
 ::
 
-    $ diff glibc-2.24/stdlib/div.c temp/glibc-2.24/stdlib/div.c
-    51d50
-    < #include <stdio.h>
-    59,64d57
-    <   if (numer == 99 && denom == 99) {
-    <   printf ("\nValues are 99 and 99");
-    <   result.quot = 100;
-    <   result.rem = 100;
-    <   return result;
-    <   }
-    69,74d61
-    < }
-    <
-    <
-    < int my_div(void) {
-    <   printf("\n\nCalling my_div() function.");
-    <   return -1;
+	*** orig.div.c	2017-07-24 11:44:59.963162917 +0530
+	--- div.c	2017-07-24 11:47:45.954847491 +0530
+	***************
+	*** 48,53 ****
+	--- 48,54 ----
+	   */
+	
+	  #include <stdlib.h>
+	+ #include <stdio.h>
+	
+	  /* Return the `div_t' representation of NUMER over DENOM.  */
+	  div_t
+	***************
+	*** 55,62 ****
+	--- 56,74 ----
+	  {
+		div_t result;
+	
+	+     if (numer == 99 && denom == 99) {
+	+         printf("\nValues are 99 and 99")
+	+         result.quot = 100;
+	+         result.rem = 100;
+	+         return result;
+	+     }
+		result.quot = numer / denom;
+		result.rem = numer % denom;
+	
+		return result;
+	  }
+	+
+	+ int mydiv(void) {
+	+     printf("\nCalling mydiv function")
+	+     return -1;
+	+ }
 
 *   Here is the declaration of the new function.
 
@@ -576,20 +593,30 @@ Here is the diff
 
 ::
 
-    $ diff glibc-2.24/stdlib/stdlib.h temp/glibc-2.24/stdlib/stdlib.h
-    753,754d752
-    <
-    < extern int my_div(void);
+	$ diff -c orig.stdlib.h stdlib.h
+	*** orig.stdlib.h	2017-07-24 11:48:35.171955594 +0530
+	--- stdlib.h	2017-07-24 11:48:58.608481035 +0530
+	***************
+	*** 752,757 ****
+	--- 752,759 ----
+		   __THROW __attribute__ ((__const__)) __wur;
+	  __END_NAMESPACE_STD
+	
+	+ int mydiv(void);
+	+
+	  #ifdef __USE_ISOC99
+	  __BEGIN_NAMESPACE_C99
+	  __extension__ extern lldiv_t lldiv (long long int __numer,
 
 *   Here is the code which calls the functions.
 
-.. literalinclude:: code_system_calls/05/div.c
+.. literalinclude:: code_system_calls/03/div/test_div.c
     :linenos:
     :language: c
 
 *   Here is the ``Makefile`` which will be used to compile the program.
 
-.. literalinclude:: code_system_calls/05/Makefile
+.. literalinclude:: code_system_calls/03/div/Makefile
     :linenos:
     :language: make
 
@@ -598,28 +625,34 @@ Here is the diff
 ::
 
     $ make
-    gcc -g -c div.c -I `gcc --print-file-name=include` -I /home/rishi/install_glibc/include
-    gcc -nostdlib -nostartfiles -static -o div /home/rishi/install_glibc/lib//crt1.o /home/rishi/install_glibc/lib//crti.o `gcc --print-file-name=crtbegin.o` div.o -Wl,--start-group /home/rishi/install_glibc/lib//libc.a -lgcc -lgcc_eh -Wl,--end-group `gcc --print-file-name=crtend.o` /home/rishi/install_glibc/lib//crtn.o
+    gcc -g -c test_div.c -I `gcc --print-file-name=include` -I /home/rishi/glibc/install_glibc/include
+    gcc -nostdlib -nostartfiles -static -o test_div /home/rishi/glibc/install_glibc/lib//crt1.o /home/rishi/glibc/install_glibc/lib//crti.o `gcc --print-file-name=crtbegin.o` test_div.o -Wl,--start-group /home/rishi/glibc/install_glibc/lib//libc.a -lgcc -lgcc_eh -Wl,--end-group `gcc --print-file-name=crtend.o` /home/rishi/glibc/install_glibc/lib//crtn.o 
 
 *   Run the statically linked code
 
 ::
 
-    $ ./div
+    $ ./test_div 
 
     Values are 99 and 99
-
-    Calling my_div() function.
+    Calling mydiv function
 
     Quotient 100 Remainder 100
+    Value returned by mydiv is -1
 
-*   See the size of the staticically linked code. The huge size is due to static linking. In case of dynamically linked code the size will be very less.
+*   See the size of the statically linked code. The huge size is due to static linking. In case of dynamically linked code the size will be very less.
 
 ::
 
-    $ ls -lh div
-    -rwxrwxr-x 1 rishi rishi 3.3M Jan 29 20:00 div
-                            ^^^^^^^
+    $ ls -lah test_div
+    -rwxrwxr-x 1 rishi rishi 3.3M Jul 24 12:21 test_div
+
+*   Using ``file`` command see the ``statically linked`` flag in the file.
+
+::
+
+    rishi@rishi-office:~/publications/doc_syscalls/code_system_calls/03/div$ file test_div
+    test_div: ELF 64-bit LSB executable, x86-64, version 1 (GNU/Linux), statically linked, for GNU/Linux 2.6.32, BuildID[sha1]=ad293fdf108078a42635ed6f91ad317ad93ec9d2, not stripped
 
 *   Check the file type of the executable.
 
@@ -631,9 +664,6 @@ Here is the diff
 Conclusion
 ==========
 
-In this chapter we have see pretty important things with respect to using
-glibc. We have see where to find glibc, how to download, extract, make changes
-and compile the glibc library in your system.
+In this chapter we have see pretty important things with respect to using ``glibc``. We have see where to find ``glibc``, how to download, extract, make changes and compile the ``glibc`` library in your system.
 
-Doing all the steps hands-on will enable you understand the whole workflow more
-clearly and will thus improve your understanding of systems.
+Doing all the steps hands-on will enable you understand the whole workflow more clearly and will thus improve your understanding of systems.

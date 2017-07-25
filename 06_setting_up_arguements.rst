@@ -5,34 +5,34 @@ Setting Up Arguments
 Introduction
 ============
 
-In the previous chapter :ref:`system_calls` section we have see the theory part related to passing arguements
+In the previous chapter :ref:`system_calls` section we have see the theory part related to passing arguments
 to the system call interface of the kernel. Now we will a ``hands-on`` exercise related to it.
 
 We will see if how the above concepts being implemented in ``glibc`` code. We will see it in two ways
 
 #.  We will walk through ``open`` system call in ``glibc`` library. This should show us how the registers are filled with the right value and then assembly instruction ``syscall`` is been called.
-#.  We will add a breakpoint in one system call and see the state of the registers.
+#.  We will add a break point in one system call and see the state of the registers.
 
 Walk through ``open`` system call in ``glibc``
 ==============================================
 
-#.  All the above theory of passing the arguments should match with the code which is written in ``glibc``.
+*   All the above theory of passing the arguments should match with the code which is written in ``glibc``.
 
-#.  We will now read the code in the ``glibc`` to find out if the theory matches
+*   We will now read the code in the ``glibc`` to find out if the theory matches
     what is written in the code.
 
-#.  Now the question is ``open`` system call - how will it turn to a ``syscall``
+*   Now the question is ``open`` system call - how will it turn to a ``syscall``
     instruction with the right values in the registers.
 
-#.  Now we need to find out what happens to the ``open`` system call when compiled. For this we will write a small code and compile it statically. Using ``objdump`` we will be able to see the actual function calls.
+*   Now we need to find out what happens to the ``open`` system call when compiled. For this we will write a small code and compile it statically. Using ``objdump`` we will be able to see the actual function calls.
 
-#.  File where sys call numbers are mentioned ``/usr/include/x86_64-linux-gnu/asm/unistd_64.h``
+*   File where system call numbers are mentioned ``/usr/include/x86_64-linux-gnu/asm/unistd_64.h``
 
-#.  File where ``SYS_write`` maps to ``NR_Write`` ``/usr/include/x86_64-linux-gnu/bits/syscall.h``
+*   File where ``SYS_write`` maps to ``NR_Write`` ``/usr/include/x86_64-linux-gnu/bits/syscall.h``
 
-#.  From the objdump we saw that ``__libc_open`` was called. This called ``__open_nocancel`` and it had a ``syscall`` instruction.
+*   From the ``objdump`` we saw that ``__libc_open`` was called. This called ``__open_nocancel`` and it had a ``syscall`` instruction.
 
-#.  See the ``object dump``, offset ``433e0e``. This dump is taken from a code where we had a ``open`` system call and was compiled.
+*   See the ``object dump``, offset ``433e0e``. This dump is taken from a code where we had a ``open`` system call and was compiled.
 
 ::
 
@@ -61,11 +61,9 @@ Walk through ``open`` system call in ``glibc``
     433e58:   00 00 00
     433e5b:   0f 1f 44 00 00          nopl   0x0(%rax,%rax,1)
 
-#.  Now, when in glibc-2.3 dir I started finding the code for the function ``__open_nocancel`` I found this
+*   Now, when in ``glibc-2.3`` dir I started finding the code for the function ``__open_nocancel`` I found this
 
-#.  There is 
-
-#.  File is ``sysdeps/unix/sysv/linux/generic/open.c``
+*   File is ``sysdeps/unix/sysv/linux/generic/open.c``
 
 ::
 
@@ -84,7 +82,7 @@ Walk through ``open`` system call in ``glibc``
         return INLINE_SYSCALL (openat, 4, AT_FDCWD, file, oflag, mode);
     }
 
-#.  So INLINE_SYSCALL is being called by this function. This is defined in the
+*   So INLINE_SYSCALL is being called by this function. This is defined in the
     file ``glibc-2.3/sysdeps/unix/sysv/linux/x86_64/sysdep.h``
 
 ::
@@ -100,14 +98,14 @@ Walk through ``open`` system call in ``glibc``
          (long int) resultvar; })
 
 
-#.  Thus it calls ``INTERNAL_SYSCALL`` which is defined as
+*   Thus it calls ``INTERNAL_SYSCALL`` which is defined as
 
 ::
 
     # define INTERNAL_SYSCALL(name, err, nr, args...) \
       INTERNAL_SYSCALL_NCS (__NR_##name, err, nr, ##args)
 
-#.  Now let us see the ``INTERNAL_SYSCALL_NCS`` in the file
+*   Now let us see the ``INTERNAL_SYSCALL_NCS`` in the file
     ``./sysdeps/unix/sysv/linux/x86_64/sysdep.h`` here see the macro
     ``INTERNAL_SYSCALL_NCS``. **This is the exact macro which is calling the
     ``syscall`` assembly instruction.** You can see the ``asm`` instructions in the code.
@@ -126,15 +124,15 @@ Walk through ``open`` system call in ``glibc``
              (long int) resultvar; })
 
 
-#.  Thus here we enter the kernel using the ``syscall`` assembly instruction.
+*   Thus here we enter the kernel using the ``syscall`` assembly instruction.
 
-#.  Also, we need to figure out how - ``open()`` call went to be called as ``__open_nocancel``
+*   Also, we need to figure out how - ``open()`` call went to be called as ``__open_nocancel``
 
 .. todo:: ``open`` call called ``__open_nocancel``, How.
 
 .. todo:: The above section is not very well written, do it.
 
-#.  **We have redone the whole thing with the ``write`` system call in the appendix. You can see that as well to get more clarity.**
+*   **We have redone the whole thing with the ``write`` system call in the appendix. You can see that as well to get more clarity.**
 
 Check Arguements Using A Debugger
 =================================
@@ -143,7 +141,7 @@ In the above example we saw how the code calls the ``syscall`` instruction to
 enter the kernel and call the required functionality.  Write the following code
 and compile it with ``gcc -g filename.c``
 
-``-g`` flag adds the debugging information to the execuatable.
+``-g`` flag adds the debugging information to the executable.
 
 .. literalinclude:: code_system_calls/01/02.c
     :language: c
