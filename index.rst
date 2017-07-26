@@ -11,16 +11,13 @@ System Call Layer
    :maxdepth: 2
    :caption: Contents:
 
-   01_introduction.rst
-   02_system_calls.rst
-   03_glibc.rst
-   05_calling_system_calls.rst
-   06_setting_up_arguements.rst
-   06_system_call_implementation.rst
-   07_calling_system_calls.rst
-   08_return_values.rst
-   11_appendix.rst
-   12_appendix.rst
+   doc/01_introduction.rst
+   doc/02_system_calls.rst
+   doc/03_glibc.rst
+   doc/05_calling_system_calls.rst
+   doc/06_setting_up_arguements.rst
+   doc/07_calling_system_calls.rst
+   doc/08_return_values.rst
 
 Indices and tables
 ==================

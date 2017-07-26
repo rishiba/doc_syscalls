@@ -7,11 +7,11 @@ section .text
     ; 1 is the STDOUT file descriptor.
 
     mov rdi, 1             	
-    
-     ; buffer to be printed.
+
+    ; buffer to be printed.
 
     mov rsi, message       	
-    
+
     ; length of buffer
 
     mov rdx, [messageLen]   	
@@ -20,13 +20,13 @@ section .text
     syscall
 	
     ; sys_exit
-	mov rax, 60             
+	mov rax, 60
 
     ; return value is 0
-	mov rdi, 0              
+	mov rdi, 0
 
     ; call the assembly instruction
-	syscall                  
+	syscall
 	
 section .data
 	messageLen: dq message.end-message

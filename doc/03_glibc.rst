@@ -246,38 +246,9 @@ Reading ``strlen``
 
 *   Let us see the code of ``strcmp.c``. The file is present in the extracted ``glibc`` directory.
 
-::
-
-	#include <string.h>
-
-	#undef strcmp
-
-	#ifndef STRCMP
-	# define STRCMP strcmp
-	#endif
-
-	/* Compare S1 and S2, returning less than, equal to or
-	   greater than zero if S1 is lexicographically less than,
-	   equal to or greater than S2.  */
-	int
-	STRCMP (const char *p1, const char *p2)
-	{
-	  const unsigned char *s1 = (const unsigned char *) p1;
-	  const unsigned char *s2 = (const unsigned char *) p2;
-	  unsigned char c1, c2;
-
-	  do
-		{
-		  c1 = (unsigned char) *s1++;
-		  c2 = (unsigned char) *s2++;
-		  if (c1 == '\0')
-		return c1 - c2;
-		}
-	  while (c1 == c2);
-
-	  return c1 - c2;
-	}
-	libc_hidden_builtin_def (strcmp)
+.. literalinclude:: code_system_calls/03/strcmp/strcmp.c
+    :language: c
+    :linenos:
 
 *   The code is pretty simple to understand. It iterates through the string till
     the time it finds both the characters equal.
@@ -294,21 +265,10 @@ Walkthrough ``div``
     functionality provided by the ``glibc`` is just a simple function which we write
     almost daily in our code.
 
-::
-
-	#include <stdlib.h>
-
-	/* Return the `div_t' representation of NUMER over DENOM.  */
-	div_t
-	div (int numer, int denom)
-	{
-	  div_t result;
-
-	  result.quot = numer / denom;
-	  result.rem = numer % denom;
-
-	  return result;
-	}
+.. literalinclude:: code_system_calls/03/div/div.c.orig
+    :lineno-match:
+    :start-after: #include <stdlib.h>
+    :language: c
 
 Compiling and installing ``glibc``
 ==================================
@@ -355,7 +315,6 @@ compiling.
     rishi@rishi-VirtualBox:~/glibc-2.24$ cd ../build_glibc/
 
 *   Let us now run the configure command.
-
 
 ::
 
@@ -549,70 +508,25 @@ Here is the diff
     99 to div it will return 100 and 100. Read the default behavior in the man
     pages.
 
-::
 
-	*** orig.div.c	2017-07-24 11:44:59.963162917 +0530
-	--- div.c	2017-07-24 11:47:45.954847491 +0530
-	***************
-	*** 48,53 ****
-	--- 48,54 ----
-	   */
-	
-	  #include <stdlib.h>
-	+ #include <stdio.h>
-	
-	  /* Return the `div_t' representation of NUMER over DENOM.  */
-	  div_t
-	***************
-	*** 55,62 ****
-	--- 56,74 ----
-	  {
-		div_t result;
-	
-	+     if (numer == 99 && denom == 99) {
-	+         printf("\nValues are 99 and 99")
-	+         result.quot = 100;
-	+         result.rem = 100;
-	+         return result;
-	+     }
-		result.quot = numer / denom;
-		result.rem = numer % denom;
-	
-		return result;
-	  }
-	+
-	+ int mydiv(void) {
-	+     printf("\nCalling mydiv function")
-	+     return -1;
-	+ }
+.. literalinclude:: code_system_calls/03/div/div.c
+    :diff: code_system_calls/03/div/div.c.orig
+
 
 *   Here is the declaration of the new function.
 
 ``glibc-2.24/stdlib/stdlib.h``
 ------------------------------
 
-::
-
-	$ diff -c orig.stdlib.h stdlib.h
-	*** orig.stdlib.h	2017-07-24 11:48:35.171955594 +0530
-	--- stdlib.h	2017-07-24 11:48:58.608481035 +0530
-	***************
-	*** 752,757 ****
-	--- 752,759 ----
-		   __THROW __attribute__ ((__const__)) __wur;
-	  __END_NAMESPACE_STD
-	
-	+ int mydiv(void);
-	+
-	  #ifdef __USE_ISOC99
-	  __BEGIN_NAMESPACE_C99
-	  __extension__ extern lldiv_t lldiv (long long int __numer,
+.. literalinclude:: code_system_calls/03/div/stdlib.h
+    :diff: code_system_calls/03/div/stdlib.h.orig
 
 *   Here is the code which calls the functions.
 
 .. literalinclude:: code_system_calls/03/div/test_div.c
     :linenos:
     :language: c
+    :caption:
 
 *   Here is the ``Makefile`` which will be used to compile the program.
 
