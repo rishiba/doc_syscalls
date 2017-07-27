@@ -38,7 +38,7 @@ Glibc ``syscall()`` interface
 
 .. literalinclude:: code_system_calls/07/syscall.S
     :linenos:
-    :language: asm
+    :language: c
 
 ``syscall`` assembly instruction
 ================================
@@ -98,7 +98,10 @@ go through the assembly code you will see a call to ``write`` function. This
 function is defined in the ``glibc``.
 
 
-.. todo:: We should explain the assembly code generated above.
+.. literalinclude:: code_system_calls/07/write.s
+    :linenos:
+    :language: asm
+
 
 ``syscall()`` function
 -----------------------
