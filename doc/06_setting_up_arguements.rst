@@ -27,8 +27,8 @@ Walk through ``open`` system call in ``glibc``
 
 *   Use the following file for the purpose.
 
-.. literalinclude::
-    :language:c
+.. literalinclude:: code_system_calls/06/open.c
+    :language: c
     :linenos:
 
 *   To compile use the following command ``gcc open.c --static -g -o elf.open``

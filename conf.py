@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# System Calls documentation build configuration file, created by
-# sphinx-quickstart on Sat Jan 28 20:51:42 2017.
+# Glibc and System Calls documentation build configuration file, created by
+# sphinx-quickstart on Mon Jul 31 11:33:38 2017.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
@@ -31,7 +31,8 @@ import os
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.todo', 'sphinx.ext.coverage']
+extensions = ['sphinx.ext.todo',
+    'sphinx.ext.coverage']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -46,8 +47,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = 'System Calls'
-copyright = '2017, Rishi Agrawal'
+project = 'Glibc and System Calls'
+copyright = '2017, Rishi Agrawal <rishi.b.agrawal@gmail.com>'
 author = 'Rishi Agrawal <rishi.b.agrawal@gmail.com>'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -76,6 +77,7 @@ pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -106,7 +108,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'SystemCallsdoc'
+htmlhelp_basename = 'GlibcandSystemCallsdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -133,8 +135,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'SystemCalls.tex', 'System Calls and Glibc',
-     'Rishi Agrawal <rishi.b.agrawal@gmail.com>', 'manual'),
+    (master_doc, 'GlibcandSystemCalls.tex', 'Glibc and System Calls Documentation',
+     'Rishi Agrawal \\textless{}rishi.b.agrawal@gmail.com\\textgreater{}', 'manual'),
 ]
 
 
@@ -143,7 +145,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'systemcalls', 'System Calls Documentation',
+    (master_doc, 'glibcandsystemcalls', 'Glibc and System Calls Documentation',
      [author], 1)
 ]
 
@@ -154,8 +156,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'SystemCalls', 'System Calls Documentation',
-     author, 'SystemCalls', 'One line description of project.',
+    (master_doc, 'GlibcandSystemCalls', 'Glibc and System Calls Documentation',
+     author, 'GlibcandSystemCalls', 'One line description of project.',
      'Miscellaneous'),
 ]
 

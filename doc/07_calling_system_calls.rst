@@ -38,7 +38,6 @@ Glibc ``syscall()`` interface
 
 .. literalinclude:: code_system_calls/07/syscall.S
     :linenos:
-    :language: c
 
 ``syscall`` assembly instruction
 ================================
