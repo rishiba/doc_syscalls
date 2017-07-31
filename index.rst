@@ -22,8 +22,6 @@ System Call Layer
 Indices and tables
 ==================
 
-.. todolist::
-
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`

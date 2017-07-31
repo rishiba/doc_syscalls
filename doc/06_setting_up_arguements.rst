@@ -18,29 +18,36 @@ Walk through ``open`` system call in ``glibc``
 
 *   All the above theory of passing the arguments should match with the code which is written in ``glibc``.
 
-*   We will now read the code in the ``glibc`` to find out if the theory matches
-    what is written in the code.
+*   We will now read the code in the ``glibc`` to find out if the theory matches what is written in the code.
 
-*   Now the question is ``open`` system call - how will it turn to a ``syscall``
-    instruction with the right values in the registers.
+*   Now the question is ``open`` system call - how will it turn to a ``syscall`` instruction with the right values in the registers.
 
 *   Now we need to find out what happens to the ``open`` system call when compiled. For this we will write a small code and compile it statically. Using ``objdump`` we will be able to see the actual function calls.
 
-*   File where system call numbers are mentioned ``/usr/include/x86_64-linux-gnu/asm/unistd_64.h``
 
-*   File where ``SYS_write`` maps to ``NR_Write`` ``/usr/include/x86_64-linux-gnu/bits/syscall.h``
+*   Use the following file for the purpose.
+
+.. literalinclude::
+    :language:c
+    :linenos:
+
+*   To compile use the following command ``gcc open.c --static -g -o elf.open``
+
+*   To get the ``objdump`` output use the command ``objdump elf.open -D > objdump.txt``
+
+*   File where ``SYS_open`` maps to ``__NR_open`` : ``/usr/include/x86_64-linux-gnu/bits/syscall.h``
+
+*   File where ``__NR_open`` maps to actual number ``2`` : ``/usr/include/x86_64-linux-gnu/asm/unistd_64.h``
 
 *   From the ``objdump`` we saw that ``__libc_open`` was called. This called ``__open_nocancel`` and it had a ``syscall`` instruction.
 
-*   See the ``object dump``, offset ``433e0e``. This dump is taken from a code where we had a ``open`` system call and was compiled.
+*   See the ``objdump.txt``, search for ``__open_nocancel``. 
 
 ::
 
     0000000000433e09 <_open_nocancel>:
     433e09:   b8 02 00 00 00          mov    $0x2,%eax
-
-    433e0e:   0f 05                   syscall        <<<<<<<<<<<<<<<<<<
-
+    433e0e:   0f 05                   syscall 
     433e10:   48 3d 01 f0 ff ff       cmp    $0xfffffffffffff001,%rax
     433e16:   0f 83 f4 46 00 00       jae    438510 <__syscall_error>
     433e1c:   c3                      retq
@@ -126,16 +133,9 @@ Walk through ``open`` system call in ``glibc``
 
 *   Thus here we enter the kernel using the ``syscall`` assembly instruction.
 
-*   Also, we need to figure out how - ``open()`` call went to be called as ``__open_nocancel``
 
-.. todo:: ``open`` call called ``__open_nocancel``, How.
-
-.. todo:: The above section is not very well written, do it.
-
-*   **We have redone the whole thing with the ``write`` system call in the appendix. You can see that as well to get more clarity.**
-
-Check Arguements Using A Debugger
-=================================
+Check Arguements Using ``gdb``
+==============================
 
 In the above example we saw how the code calls the ``syscall`` instruction to
 enter the kernel and call the required functionality.  Write the following code

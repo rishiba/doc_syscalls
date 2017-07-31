@@ -39,5 +39,6 @@ int main ()
 
     printf ("\nBytes Read %d", bytes_read);
     print_10_char(buf);
+    close(fd)
     return 0;
 }
