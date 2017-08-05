@@ -2,6 +2,7 @@
 Introduction
 ============
 
+
 In this book we will see how our code interacts with the glibc library which inturn interacts with the system calls in order to get some work done from the computer.
 
 We will go deep into the glibc code and see how it is all organized. How system calls are called from the user space programs.  How arguements are passed and how are return values accessed.
