@@ -74,6 +74,7 @@ See the man page of open system call by the command ``man 2 open``. You will see
 ::
 
 	RETURN VALUE
+
 		   open(),  openat(),  and creat() return the new file
 		   descriptor, or -1 if an error  occurred  (in  which
 		   case, errno is set appropriately).
@@ -118,7 +119,7 @@ The return value is returned in the ``rax`` register. We can see this using a de
 
 We will now add a breakpoint at the ``read()`` system call line and see the register's value changing after the system call. See the snippet below. Here we are compiling the code using ``make`` and then running the code first.
 
-Then we start the ``gdb`` and set up ``displays`` to list the registers ``rax`` and ``rsi``. These registers have the return values. ``rax`` has the number of bytes read and rsi has the pointer to the buffer which we are passing for the bytes to be copied.
+Then we start the ``gdb`` and set up ``displays`` to list the registers ``rax`` and ``rsi``. These registers have the return values. ``rax`` has the number of bytes read and ``rsi`` has the pointer to the buffer which we are passing for the bytes to be copied.
 
 We setup a breakpoint at ``read`` call and then we see the state of the registers before and after the read system calls are called.
 
@@ -136,11 +137,12 @@ We setup a breakpoint at ``read`` call and then we see the state of the register
 	Successfully opened the destination file..
 	Bytes Read 20
 
-	root:x:0:0$ 
+	root:x:0:0$
 	
 *	 Start ``gdb``.
 
-:: 
+::
+
 	$ gdb ./read
 	GNU gdb (Ubuntu 7.11.1-0ubuntu1~16.04) 7.11.1
 	Copyright (C) 2016 Free Software Foundation, Inc.
@@ -198,7 +200,7 @@ We setup a breakpoint at ``read`` call and then we see the state of the register
 Printing Error Value
 ====================
 
-Now let us see how do system call show the error encountered in the system calls. In this code we will try to open a file which does not exist and then we will print the global variable ``errno`` to get the status of the system call. We will also use the above mentioed function ``strerror()`` to print a more user friendly message.
+Now let us see how do system call show the error encountered in the system calls. In this code we will try to open a file which does not exist and then we will print the global variable ``errno`` to get the status of the system call. We will also use the above mentioned function ``strerror()`` to print a more user friendly message.
 
 ::
 

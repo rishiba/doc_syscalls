@@ -8,25 +8,25 @@ Introduction
 
 In this chapter we will see some of the very basic concepts of the operating systems and programs which run on it.
 
-#.  What is a computer program, how to convert the ``.c`` file to an ``executable`` and what are the steps involved.
-#.  What are libraries? What are shared libraries and static libraries?
-#.  What are system calls?
-#.  What is a kernel?
-#.  How the block diagram of the system looks like?
+*   What is a computer program, how to convert the ``.c`` file to an ``executable`` and what are the steps involved.
+*   What are libraries? What are shared libraries and static libraries?
+*   What are system calls?
+*   What is a kernel?
+*   How the block diagram of the system looks like?
 
 ========================
-Programs and compliation
+Programs and Compilation
 ========================
 
 Your program is a set of instructions to the computer which your computer needs to follow in order to get some work done for you.
 
 For running a program on a Linux System these are the steps involved.
 
-#.  Write the program.
-#.  Pre-process the program. Run ``gcc -E hello_world.c > pre.e``.
-#.  Assemble the pre-processed code. Run ``gcc -S pre.e``. You will get a file ``pre.s``
-#.  Compile the assembled code. Run ``gcc -c pre.s``. You will get a file ``pre.s``.
-#.  Run the linker on the compiled code. ``gcc pre.o``. You will get a file with name as ``a.out``.
+*   Write the program.
+*   Pre-process the program. Run ``gcc -E hello_world.c > pre.e``.
+*   Assemble the pre-processed code. Run ``gcc -S pre.e``. You will get a file ``pre.s``
+*   Compile the assembled code. Run ``gcc -c pre.s``. You will get a file ``pre.s``.
+*   Run the linker on the compiled code. ``gcc pre.o``. You will get a file with name as ``a.out``.
 
 These steps are pretty simple and straight forward but there is a lot of things which go under the hood and is hidden under the ``gcc`` command.
 
@@ -38,22 +38,22 @@ What is ``gcc``
 Stages of compilation
 =====================
 
-- ``gcc`` has to undergo a lot of stages while compiling your code. The sequence is ``PREPROCESSING -> ASSEMBLING -> COMPILATION - LINKING``
+*   ``gcc`` has to undergo a lot of stages while compiling your code. The sequence is ``PREPROCESSING -> COMPILATION -> ASSEMBLING -> LINKING``
 
 Preprocessing
 -------------
 
-#.  This stage converts the macros in the c file to c code which can be compiled. See the file ``hello.e``. Here the macro ``#include`` has been expanded and the whole file ``stdio.h`` has been copied in the c file.
+*   This stage converts the macros in the c file to c code which can be compiled. See the file ``pre.e``. Here the macro ``#include`` has been expanded and the whole file ``stdio.h`` has been copied in the c file.
 
 Compilation
 -----------
 
-#.  Here the assembled code will be converted into the opcode of the assembly instruction.
+*   Here the assembled code will be converted into the opcode of the assembly instruction.
 
 Assembling
 ----------
 
-#.  This stage will convert the C programming language into the instruction set of the CPU. See the file ``hello.s``. Here you will only see assembly instructions.
+*   This stage will convert the C programming language into the instruction set of the CPU. See the file ``pre.s``. Here you will only see assembly instructions.
 
 Linking
 -------
@@ -63,32 +63,32 @@ Linking
 Hands-On
 ========
 
-- Write the code
+*   Write the code
 
 .. literalinclude:: code_system_calls/00/01_hello_world/hello_world.c
     :language: c
     :linenos:
 
-- Pre-process the file
+*   Pre-process the file
 
     ``gcc -E hello_world.c > pre.c``
 
-- Read the ``pre.c`` file to understand what has been done in the pre-processing stage.
+*   Read the ``pre.c`` file to understand what has been done in the pre-processing stage.
 
-- Assemble the ``pre.c`` file
+*   Assemble the ``pre.c`` file
 
     ``gcc -S pre.c`` - you will get a file ``pre.s`` - Read the file to see the assembled code
 
-- Compile the ``pre.s`` file
+*   Compile the ``pre.s`` file
 
     ``gcc -c pre.s`` - you will get a file ``pre.o`` - Read the file with ``objdump -D pre.o`` - You will get to see the full contents of the file
 
-Link the file
+*   Link the file
 
-- Now this is a bit tricky as calling ``ld`` with the right option will be required. We will see how ``gcc`` does it.
+*   Now this is a bit tricky as calling ``ld`` with the right option will be required. We will see how ``gcc`` does it.
 
 
-Run ``gcc hello_world.c -v`` to see what ``gcc`` does. This is very specific to the flavor of Linux because of the folder paths it has. The same command may not run on your machine. My flavor is
+*   Run ``gcc hello_world.c -v`` to see what ``gcc`` does. This is very specific to the flavor of Linux because of the folder paths it has. The same command may not run on your machine. My flavor is
 
 ::
 
@@ -101,26 +101,26 @@ Run ``gcc hello_world.c -v`` to see what ``gcc`` does. This is very specific to 
     DISTRIB_CODENAME=xenial
     DISTRIB_DESCRIPTION="Ubuntu 16.04.2 LTS"
 
-Here is the output of the command ``gcc hello_world.c -v``. We are focusing only on the last few lines.
+*   Here is the output of the command ``gcc hello_world.c -v``. We are focusing only on the last few lines.
 
 */usr/lib/gcc/x86_64-linux-gnu/5/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/5/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/5/lto-wrapper -plugin-opt=-fresolution=/tmp/cc8bF6fB.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -z relro /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/5/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/5 -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/5/../../.. /tmp/cchjP9PO.o -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-linux-gnu/5/crtend.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crtn.o*
 
-- You will get something like above, this is the exact step done during the linking step. ``gcc`` internally calls it for linking. Read more about it http://gcc.gnu.org/onlinedocs/gccint/Collect2.html
+*   You will get something like above, this is the exact step done during the linking step. ``gcc`` internally calls it for linking. Read more about it http://gcc.gnu.org/onlinedocs/gccint/Collect2.html
 
 
-- We will replace the object file name in the above string and then run the command. New command is
+*   We will replace the object file name in the above string and then run the command. New command is
 
 *ld -plugin /usr/lib/gcc/x86_64-linux-gnu/5/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/5/lto-wrapper -plugin-opt=-fresolution=/tmp/cc1PIEfF.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -z relro /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/5/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/5 -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib   -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-linux-gnu/5/crtend.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crtn.o pre.o -o pre.elf*
 
-- The difference is marked with ``>>>>> <<<<<``
+*   The difference is marked with ``>>>>> <<<<<``
 
 */usr/lib/gcc/x86_64-linux-gnu/5/collect2 -plugin /usr/lib/gcc/x86_64-linux-gnu/5/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/5/lto-wrapper -plugin-opt=-fresolution=/tmp/cc8bF6fB.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --sysroot=/ --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -z relro /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crt1.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/5/crtbegin.o -L/usr/lib/gcc/x86_64-linux-gnu/5 -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/5/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib >>>>>>!!!-L/usr/lib/gcc/x86_64-linux-gnu/5/../../.. /tmp/cchjP9PO.o <<<<<!!! -lgcc --as-needed -lgcc_s --no-as-needed -lc -lgcc --as-needed -lgcc_s --no-as-needed /usr/lib/gcc/x86_64-linux-gnu/5/crtend.o /usr/lib/gcc/x86_64-linux-gnu/5/../../../x86_64-linux-gnu/crtn.o*
 
-- Run the command after replacing the object file in the above command.
+*   Run the command after replacing the object file in the above command.
 
-- You will get your ``pre.elf`` file
+*   You will get your ``pre.elf`` file
 
-- Run it ``./pre.elf``
+*   Run it ``./pre.elf``
 
 ::
 
@@ -129,20 +129,19 @@ Here is the output of the command ``gcc hello_world.c -v``. We are focusing only
 
     Hello World
 
--   Using the following ``Makefile`` you can do the above steps one by one and see the results for yourself.
+*   Using the following ``Makefile`` you can do the above steps one by one and see the results for yourself.
 
 .. literalinclude:: code_system_calls/00/01_hello_world/Makefile
     :language: make
     :linenos:
-
 
 =========
 Libraries
 =========
 
 A library is a zipped file of compiled code. The code is compiled and kept in a
-format that any other program can use the code by just linking to it. For the
-this the program should just have the function declared in the code so that the
+format that any other program can use the code by just linking to it. For this
+the program should just have the function declared in the code so that the
 compilation stage knows that the function's code will be linked to at a ``later
 stage.``
 
@@ -150,10 +149,10 @@ In the linking phase the linker links the code by ``attaching`` the function
 call's code present in the library to the function place where function is
 called in the compiled code.
 
-There are two words which I have ``italicized`` in the above paragraph
+There are two words which I have ``formatted differntly`` in the above paragraph
 ``attaching`` and ``later stage``.
 
-An executable is said to be **staticically linked** if the ``later stage`` is
+An executable is said to be **statically linked** if the ``later stage`` is
 the last stage of the compilation and ``attaching`` is done in the last stage
 of installation.
 
@@ -175,8 +174,8 @@ any other Linux machine.
 Shared Library
 ==============
 
-If the compiled library is not linked but not attached to the executable at the
-time of execution then it is called a dynamically linked executable. This is
+If the compiled library is linked but not attached to the executable at the
+time of execution then it is called a dynamically linked executable. This in
 achieved by just storing the location of the function's address in the library.
 The executable expects the library to be present on the system where it will be
 executed. This is one downside of dynamic linking, where as the advantage is
@@ -195,7 +194,7 @@ See this
 System Calls
 ============
 
-System calls are API's which the Kernel Provides to the user space
+System calls are API's which the Kernel provides to the user space
 applications. The system calls pass some arguments to the kernel space and the
 kernel acts accordingly on the arguments
 
@@ -243,9 +242,10 @@ Kernel is an important component of any Operating System. This is the only
 layer which interacts directly with the hardware. So in order to get any work
 done from your hardware you need to ``ask`` the kernel to do this.
 
-This ``asking`` is done by ``system calls``. In assembly level language this is the the ``syscall`` instruction. When you call any system call a
-function in the kernel is invoked and it gets the work done. The arguments we
-passed are passed to the kernel and a particular function call is invoked.
+This ``asking`` is done by ``system calls``. In assembly level language this is
+the ``syscall`` instruction. When you call any system call a function in
+the kernel is invoked and it gets the work done. The arguments we passed are
+passed to the kernel and a particular function call is invoked.
 
 For the functions any hardware interaction is needed the kernel interacts with
 the hardware through the device driver of the hardware.
@@ -275,6 +275,6 @@ In this chapter we have seen some of the important concepts and steps required t
 References
 ==========
 
-- https://stackoverflow.com/questions/14163208/how-to-link-c-object-files-with-ld
+*   https://stackoverflow.com/questions/14163208/how-to-link-c-object-files-with-ld
 
-- For further reading refer 1st Chapter ``Getting Started`` of ``Beginning Linux Programming`` by ``Neil Matthew and Richard Stones``.
+*   For further reading refer 1st Chapter ``Getting Started`` of ``Beginning Linux Programming`` by ``Neil Matthew and Richard Stones``.

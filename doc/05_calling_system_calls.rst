@@ -74,8 +74,8 @@ state of the registers when we are in the called function.
 .. note:: This table summarizes the differences when a function call is made in the user space, and when a system call is made.
    This will be more clear in coming texts. Right now make a note of it
 
-Passing arguements
-------------------
+Passing arguments
+-----------------
 
 *   Arguments are passed in the registers. The called function then uses the register to get the arguments.
 *   The arguments are passed in the following sequence ``%rdi, %rsi, %rdx, %r10, %r8 and %r9.``

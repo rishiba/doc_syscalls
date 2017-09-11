@@ -5,10 +5,10 @@ Setting Up Arguments
 Introduction
 ============
 
-In the previous chapter :ref:`system_calls` section we have see the theory part related to passing arguments
-to the system call interface of the kernel. Now we will a ``hands-on`` exercise related to it.
+In the previous chapter :ref:`system_calls` section we have seen the theory part related to passing arguments
+to the system call interface of the kernel. Now we will do a ``hands-on`` exercise related to it.
 
-We will see if how the above concepts being implemented in ``glibc`` code. We will see it in two ways
+We will see how the above concepts are being implemented in ``glibc`` code. We will see it in two ways
 
 #.  We will walk through ``open`` system call in ``glibc`` library. This should show us how the registers are filled with the right value and then assembly instruction ``syscall`` is been called.
 #.  We will add a break point in one system call and see the state of the registers.

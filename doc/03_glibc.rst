@@ -578,6 +578,6 @@ Here is the diff
 Conclusion
 ==========
 
-In this chapter we have see pretty important things with respect to using ``glibc``. We have see where to find ``glibc``, how to download, extract, make changes and compile the ``glibc`` library in your system.
+In this chapter we have seen pretty important things with respect to using ``glibc``. We have seen where to find ``glibc``, how to download, extract, make changes and compile the ``glibc`` library in your system.
 
 Doing all the steps hands-on will enable you understand the whole workflow more clearly and will thus improve your understanding of systems.
