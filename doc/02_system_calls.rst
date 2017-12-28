@@ -23,8 +23,8 @@ Your program is a set of instructions to the computer which your computer needs 
 For running a program on a Linux System these are the steps involved.
 
 *   Write the program.
-*   Pre-process the program. Run ``gcc -E hello_world.c > pre.e``.
-*   Assemble the pre-processed code. Run ``gcc -S pre.e``. You will get a file ``pre.s``
+*   Pre-process the program. Run ``gcc -E hello_world.c > pre.c``.
+*   Assemble the pre-processed code. Run ``gcc -S pre.c``. You will get a file ``pre.s``
 *   Compile the assembled code. Run ``gcc -c pre.s``. You will get a file ``pre.s``.
 *   Run the linker on the compiled code. ``gcc pre.o``. You will get a file with name as ``a.out``.
 
@@ -249,21 +249,6 @@ passed to the kernel and a particular function call is invoked.
 
 For the functions any hardware interaction is needed the kernel interacts with
 the hardware through the device driver of the hardware.
-
-===================
-System Architecture
-===================
-
-With the above context about important components of the system we can now draw the following diagram.
-
-.. figure:: diagrams/diag_system_architecture.png
-    :scale: 95 %
-    :alt: System Architecture.
-    :width: 600px
-    :height: 600px
-    :align: center
-
-    This is the caption of the figure (a simple paragraph).
 
 ==========
 Conclusion
